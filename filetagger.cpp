@@ -24,6 +24,7 @@
 #include <QMessageBox>
 #include <QDebug>
 #include <QDesktopServices>
+
 extern QString FILE_ARG;
 float wordmatching(const QString &wordq1,const QString &wordq2)
 {  // float c=2.45;
@@ -110,7 +111,7 @@ FileTagger::FileTagger(QWidget *parent) :
 
     ui->tabWidget->setTabText(0, "CREATE NEW TAGS");
     ui->tabWidget->setTabText(1, "BROWSE TAGS");
-    setWindowTitle("File Tagger (version 1.0)");
+    setWindowTitle("File Tagger (version 1.1)");
 
     ui->filename->setText(FILE_ARG);
 
@@ -262,8 +263,27 @@ void  FileTagger::SORTFILELIST()
 {
     ui->PREVIOUS_TAGS->clear();
     QString find= ui->ENTER_TAG_FIND->text();
+    float *score=new float[DATABASE.size()];
+    QRegExp rxdb("#tags-:");
+    QRegExp rx("(\\ |\\t)");
+    QStringList tags = find.split(rx);
 
-    QRegExp rx("#tags-:");
+    for (int i = 0; i < DATABASE.size(); ++i)
+    {
+        QStringList dbtaglist = DATABASE.at(i).split(rxdb);
+        QStringList dbtags=dbtaglist.at(1).split(rx);
+        score[i]=0.0;
+        for (int j = 0; j < tags.size(); ++j)
+        {
+            for (int k = 0; k < dbtags.size(); ++k)
+            {
+                ///adding weights on each tags individually
+                score[i]=score[i]+wordmatching(dbtags.at(k),tags.at(j));
+            }
+        }
+
+    }
+
     if (find.length()>0){
 
         QString replacest;
@@ -271,10 +291,8 @@ void  FileTagger::SORTFILELIST()
         {
             for (int j = i+1; j < DATABASE.size(); ++j)
             {
-                QStringList queryi = DATABASE.at(i).split(rx);
-                QStringList queryj = DATABASE.at(j).split(rx);
 
-                if (wordmatching(queryj.at(1),find) > wordmatching(queryi.at(1),find))
+                if (score[j] > score[i])
                 {
                     replacest=DATABASE.at(j);
                     DATABASE.replace(j,DATABASE.at(i) );

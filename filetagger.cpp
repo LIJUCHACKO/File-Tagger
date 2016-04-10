@@ -110,7 +110,7 @@ FileTagger::FileTagger(QWidget *parent) :
 
     ui->tabWidget->setTabText(0, "CREATE NEW TAGS");
     ui->tabWidget->setTabText(1, "BROWSE TAGS");
-   setWindowTitle("File Tagger (version 1.0)");
+    setWindowTitle("File Tagger (version 1.0)");
 
     ui->filename->setText(FILE_ARG);
 
@@ -149,22 +149,22 @@ void FileTagger::OPEN_FILE()
 
     QRegExp rx("#tags-:");
 
-        QStringList queryi = DATABASE.at(LISTindex).split(rx);
-        QString file=queryi.at(0);
-        QDesktopServices::openUrl(QUrl::fromLocalFile(file));
+    QStringList queryi = DATABASE.at(LISTindex).split(rx);
+    QString file=queryi.at(0);
+    QDesktopServices::openUrl(QUrl::fromLocalFile(file));
 }
 
 void FileTagger::SAVEDATABASE()
 {
 
 
- QFile file(dbdir+"/Filetagger_db");
- file.open(QIODevice::WriteOnly|QIODevice::Truncate|QIODevice::Text);
- QTextStream out(&file);
- for (int i = 0; i < DATABASE.size(); ++i)
- {
-     out<<DATABASE.at(i)+"\n";
- }
+    QFile file(dbdir+"/Filetagger_db");
+    file.open(QIODevice::WriteOnly|QIODevice::Truncate|QIODevice::Text);
+    QTextStream out(&file);
+    for (int i = 0; i < DATABASE.size(); ++i)
+    {
+        out<<DATABASE.at(i)+"\n";
+    }
 
 }
 void FileTagger::OPENDATABASE()
@@ -401,7 +401,7 @@ void FileTagger::ADD_TAG_ACTION()
     file.replace("file:///","/");
     if( file.at(file.length()-1) == '/' ) file.remove( file.length()-1, 1 );
     if(file.size()<2)
-     {
+    {
         QMessageBox messageBox;
         messageBox.critical(0,"Error","Give File/Folder name");
         messageBox.setFixedSize(500,200);

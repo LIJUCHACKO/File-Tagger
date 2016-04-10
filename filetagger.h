@@ -32,8 +32,8 @@ class FileTagger : public QMainWindow
 public:
     explicit FileTagger(QWidget *parent = 0);
     ~FileTagger();
-   QStringList DATABASE;
-   QStringList TAGS;
+    QStringList DATABASE;
+    QStringList TAGS;
     void SAVEDATABASE();
     void OPENDATABASE();
     void UPDATE_FILELIST();
@@ -48,8 +48,8 @@ private slots:
     void UPDATETAG();
     void SORTFILELIST();
     void AUTOCOMPLETETAG();
-     void REMOVEFROMDATABASE();
-     void OPEN_FILE();
+    void REMOVEFROMDATABASE();
+    void OPEN_FILE();
 private:
     Ui::FileTagger *ui;
 

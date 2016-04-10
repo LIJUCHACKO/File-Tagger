@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Service
+X-KDE-ServiceTypes=KonqPopupMenu/Plugin
+Actions=TAGFILE;
+MimeType=all/all;
+
+[Desktop Action TAGFILE]
+Name=TAG_FILE
+Exec=FILETAGGER %F

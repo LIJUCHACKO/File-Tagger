@@ -1,21 +1,26 @@
 About
 ------------------------------------
 
-  1. It is any easy way to tag file/folders without affecting file system
+  1. It is a simple gui utility written in qt to tag file/folders without affecting files.
   
-  2. Approximate word matching algorithm is used so that same tag name can be used for multiple files
+  2. Approximate word matching algorithm is used for searching tags.
 
-  3. While searching for tags you need not type exact spelling of tag.
+  3. Application will also help in keeping consistency in tag names(Reusing the same terms).
 
-  4. Configuration file is kept in <home directory>/.Filetagger/Filetagger_db as a simple text file. You can file replace path if you have moved or renamed any folder
+  4. Configuration file is kept in <home directory>/.Filetagger/Filetagger_db as a simple text file. You can file replace path if you have moved or renamed any folder.
+
+  5. File or Folder can be open by clicking on the link listed in "Browse Tags" tab
+
+  6. Screenshot of the application is also uploaded.(TAB1.png, TAB2.png)
+
   
 
 Installation
 ------------------------------------
 
-  1. Compile the project in qtcreator and copy to /usr/bin
+  1. Compile the project in qtcreator and copy FILETAGGER to /usr/bin. Executable file for 64 bit machine is uploaded(Compile on ubuntu14.04LTS). 
   
-  2. On KDE Desktop in order to provide right click action 
+  2. On KDE Desktop in order to add this as an action on browsers, do as follows 
   
 
 
@@ -25,3 +30,4 @@ Run following as root
     kbuildsycoca4
 
 ```
+  Close all instance of Dolphin browser and start again. Tag file option will appear in the action list.

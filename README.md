@@ -1,7 +1,7 @@
 About
 ------------------------------------
 
-  1. It is a simple gui utility written in qt to tag file/folders without affecting files.
+  1. This is a simple gui utility written in qt to tag file/folders without affecting files.
   
   2. Approximate word matching algorithm is used for searching tags.
 
@@ -9,7 +9,7 @@ About
 
   4. Configuration file is kept in <home directory>/.Filetagger/Filetagger_db as a simple text file. You can find replace path if you have moved or renamed any folder.
 
-  5. File or Folder can be open by clicking on the link listed in "Browse Tags" tab
+  5. File or Folder can be opened by clicking on the link listed in "Browse Tags" tab
 
   6. Screenshot of the application is also uploaded.(TAB1.png, TAB2.png)
 

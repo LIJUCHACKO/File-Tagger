@@ -1,7 +1,7 @@
 About
 ------------------------------------
 
-  1. This is a simple gui utility written in qt to tag file/folders without affecting files.
+  1. This is a simple gui utility to tag/bookmark file/folders without affecting files.
   
   2. Approximate word matching algorithm is used for searching tags.
 
@@ -31,3 +31,9 @@ Run following as root
 
 ```
   Close all instance of Dolphin browser and start again. Tag file option will appear in the action list.
+
+Usage
+------------------------------------
+  1. Right click on the folder/file and click "ADD TAG". Enter the tags to bookmark the file and press "ADD TAG" button.Similar tags used before will be listed below. By clicking on them or by pressing enter, last tag can be replaced.
+  
+  2. In the "Browse Tag" tab, enter tags you want to search and files with approximate matching tags will come on the top.

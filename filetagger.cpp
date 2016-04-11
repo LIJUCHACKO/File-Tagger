@@ -111,7 +111,12 @@ FileTagger::FileTagger(QWidget *parent) :
 
     ui->tabWidget->setTabText(0, "CREATE NEW TAGS");
     ui->tabWidget->setTabText(1, "BROWSE TAGS");
-    setWindowTitle("File Tagger (version 1.1)");
+    setWindowTitle("File Tagger (version 1.3)");
+    if( FILE_ARG.size()<1){
+        ui->tabWidget->setCurrentIndex(1);
+    }else{
+        ui->tabWidget->setCurrentIndex(0);
+    }
 
     ui->filename->setText(FILE_ARG);
 
@@ -141,6 +146,7 @@ FileTagger::FileTagger(QWidget *parent) :
 
     connect(ui->ENTER_TAG,SIGNAL(returnPressed()), this, SLOT(AUTOCOMPLETETAG()));
     connect(ui->REMOVETAG ,SIGNAL(clicked()), this, SLOT(REMOVEFROMDATABASE()));
+    connect(ui->CHECKFILES,SIGNAL(clicked()), this, SLOT(Check_FILELIST()));
     UPDATETAG();
 }
 
@@ -183,7 +189,7 @@ void FileTagger::OPENDATABASE()
         {
             if (items.at(i).size()>0)
             {
-                DATABASE<<items.at(i);
+                DATABASE<<items.at(i).trimmed();
                 QRegExp rxi("#tags-:");
                 QStringList queryi = items.at(i).split(rxi);
                 QRegExp rx("(\\ |\\t)"); //RegEx for ' ' OR '\t'
@@ -196,6 +202,32 @@ void FileTagger::OPENDATABASE()
     UPDATE_FILELIST();
 
 }
+
+void FileTagger::Check_FILELIST()
+{
+    ui->FILE_LIST->clear();
+    QRegExp rx("#tags-:");int count=0;
+    for (int i = 0; i < DATABASE.size(); ++i)
+    {
+        QStringList queryi = DATABASE.at(i).split(rx);
+
+        ui->FILE_LIST->addItem(queryi.at(0) +" ["+queryi.at(1)+"]");
+         if (QDir(queryi.at(0)).exists()||QFile(queryi.at(0)).exists()) {
+            ui->FILE_LIST->item(ui->FILE_LIST->count()-1)->setForeground(*(new QBrush(Qt::green)));
+          } else {
+             ui->FILE_LIST->item(ui->FILE_LIST->count()-1)->setForeground(*(new QBrush(Qt::red)));
+             count=count+1;
+         }
+
+    }
+    ui->FILE_LIST->scrollToTop();
+    if (count>0) {
+        QMessageBox messageBox;
+        messageBox.critical(0,"Error","Some files are missing (highlighted in red)");
+        messageBox.setFixedSize(500,200);
+    }
+}
+
 void FileTagger::UPDATE_FILELIST()
 {
     ui->FILE_LIST->clear();
@@ -205,6 +237,9 @@ void FileTagger::UPDATE_FILELIST()
         QStringList queryi = DATABASE.at(i).split(rx);
 
         ui->FILE_LIST->addItem(queryi.at(0) +" ["+queryi.at(1)+"]");
+
+
+
 
     }
     ui->FILE_LIST->scrollToTop();
@@ -366,15 +401,29 @@ void FileTagger::REMOVEFROMDATABASE()
 {
     QRegExp rx("#tags-:");
     int LISTindex=ui->FILE_LIST->currentRow();
-    QStringList queryd = DATABASE.at(LISTindex).split(rx);
+
     if( LISTindex>=0 && LISTindex<DATABASE.size())
     {
-        DATABASE.removeAt(LISTindex);
+        QMessageBox::StandardButton reply;
+            QStringList queryd = DATABASE.at(LISTindex).split(rx);
+          reply = QMessageBox::question(this, "Confirmation", queryd.at(0)+" Delete?",
+                                        QMessageBox::Yes|QMessageBox::No);
+          if (reply == QMessageBox::Yes) {
+
+
+              DATABASE.removeAt(LISTindex);
+              ui->history->addItem("REMOVED "+queryd.at(0)+"  -["+queryd.at(1)+"]");
+              SAVEDATABASE();
+              //update FILE_LIST IN SECOND TAB
+              UPDATE_FILELIST();
+          } else {
+            qDebug() << "Yes was *not* clicked";
+          }
+
+
+
     }
-    ui->history->addItem("REMOVED "+queryd.at(0)+"  -["+queryd.at(1)+"]");
-    SAVEDATABASE();
-    //update FILE_LIST IN SECOND TAB
-    UPDATE_FILELIST();
+
 }
 
 void FileTagger::ADDTODATABASE(QString data)
@@ -416,8 +465,7 @@ void FileTagger::ADD_TAG_ACTION()
     OPENDATABASE();
     QString NEW_TAG= ui->ENTER_TAG->text().trimmed();
     QString file=ui->filename->text().trimmed();
-    file.replace("file:///","/");
-    if( file.at(file.length()-1) == '/' ) file.remove( file.length()-1, 1 );
+
     if(file.size()<2)
     {
         QMessageBox messageBox;
@@ -425,6 +473,8 @@ void FileTagger::ADD_TAG_ACTION()
         messageBox.setFixedSize(500,200);
         return;
     }
+    file.replace("file:///","/");
+    if( file.at(file.length()-1) == '/' ) file.remove( file.length()-1, 1 );
     if (!QDir(file).exists()&&!QFile(file).exists())
     {
         QMessageBox messageBox;

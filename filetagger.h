@@ -50,6 +50,7 @@ private slots:
     void AUTOCOMPLETETAG();
     void REMOVEFROMDATABASE();
     void OPEN_FILE();
+    void Check_FILELIST();
 private:
     Ui::FileTagger *ui;
 

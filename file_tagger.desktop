@@ -5,5 +5,5 @@ Actions=TAGFILE;
 MimeType=all/all;
 
 [Desktop Action TAGFILE]
-Name=TAG_FILE
+Name=ADD TAG
 Exec=FILETAGGER %F

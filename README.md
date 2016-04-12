@@ -18,7 +18,7 @@ About
 Installation
 ------------------------------------
 
-  1. Compile the project in qtcreator and copy FILETAGGER to /usr/bin. Executable file for 64 bit machine is uploaded(Compile on ubuntu14.04LTS). 
+  1. Compile the project in qtcreator and copy FILETAGGER to /usr/bin. Executable file for 64 bit linux machine is uploaded(Compile on ubuntu14.04LTS). 
   
   2. On KDE Desktop file_tag action can be added on file browsers. Do as follows 
   
@@ -32,8 +32,8 @@ Run following as root
 ```
   Close all instance of Dolphin browser and start again. Tag file option will appear in the action list.
 
-Usage
+Usage (for linux user)
 ------------------------------------
-  1. Right click on the folder/file and click "ADD TAG". Enter the tags to bookmark the file and press "ADD TAG" button.Similar tags used before will be listed below. By clicking on them or by pressing enter, last tag can be replaced.
+  1. In Dolphin file browser, right click on the folder/file and select "ADD TAG" in actions menu. Enter the tags to bookmark the file and press "ADD TAG" button.Similar tags used before will be listed below. By clicking on them or by pressing enter, last tag can be replaced.
   
   2. In the "Browse Tag" tab, enter tags you want to search and files with approximate matching tags will come on the top.

@@ -108,18 +108,16 @@ FileTagger::FileTagger(QWidget *parent) :
     ui(new Ui::FileTagger)
 {
     ui->setupUi(this);
-
     ui->tabWidget->setTabText(0, "CREATE NEW TAGS");
     ui->tabWidget->setTabText(1, "BROWSE TAGS");
-    setWindowTitle("File Tagger (version 1.3)");
+    setWindowTitle("File Tagger");
+    ui->version->setText("1.4");
     if( FILE_ARG.size()<1){
         ui->tabWidget->setCurrentIndex(1);
     }else{
         ui->tabWidget->setCurrentIndex(0);
     }
-
     ui->filename->setText(FILE_ARG);
-
     dbdir= QDir::homePath();
     dbdir=dbdir+"/.Filetagger";
     qDebug()<<dbdir;
@@ -129,21 +127,12 @@ FileTagger::FileTagger(QWidget *parent) :
     }
 
     OPENDATABASE();
-
-
-
-    //connect(ui->openfile,SIGNAL(clicked()), this, SLOT(GETFILENAME()));
-    //connect(ui->openfolder,SIGNAL(clicked()), this, SLOT(GETFOLDERNAME()));
     connect(ui->ADD_TAG,SIGNAL(clicked()), this, SLOT(ADD_TAG_ACTION()));
-
-
     connect(ui->ENTER_TAG,SIGNAL(textChanged(QString)), this, SLOT(UPDATETAGLIST()));
     connect(ui->filename,SIGNAL(textChanged(QString)), this, SLOT(UPDATETAG()));
     connect(ui->ENTER_TAG_FIND,SIGNAL(textChanged(QString)), this, SLOT(SORTFILELIST()));
     connect(ui->PREVIOUS_TAGS, SIGNAL(itemClicked(QListWidgetItem*)),this, SLOT(AUTOCOMPLETETAG()));
     connect(ui->FILE_LIST, SIGNAL(itemClicked(QListWidgetItem*)),this, SLOT(OPEN_FILE()));
-
-
     connect(ui->ENTER_TAG,SIGNAL(returnPressed()), this, SLOT(AUTOCOMPLETETAG()));
     connect(ui->REMOVETAG ,SIGNAL(clicked()), this, SLOT(REMOVEFROMDATABASE()));
     connect(ui->CHECKFILES,SIGNAL(clicked()), this, SLOT(Check_FILELIST()));
@@ -156,9 +145,98 @@ void FileTagger::OPEN_FILE()
 
     QRegExp rx("#tags-:");
 
-    QStringList queryi = DATABASE.at(LISTindex).split(rx);
-    QString file=queryi.at(0);
-    QDesktopServices::openUrl(QUrl::fromLocalFile(file));
+    QStringList queryl = DATABASE.at(LISTindex).split(rx);
+    QString file=queryl.at(0);
+    if(file.size()>4){
+        QString subString=file.left(3);
+        if (subString=="htt"){
+            QDesktopServices::openUrl(QUrl(file));
+
+        } else{
+            if (QDir(file).exists()||QFile(file).exists()) {
+                QDesktopServices::openUrl(QUrl::fromLocalFile(file));
+            } else {
+                qDebug()<<"cannot open path";
+                QMessageBox::StandardButton reply = QMessageBox::question(this, "File/folder missing ", file+"\n Is it a file ?",
+                                                                          QMessageBox::Yes|QMessageBox::No);
+                QString filenamenew;
+                if (reply == QMessageBox::Yes) {
+                    filenamenew =  QFileDialog::getOpenFileName(this,
+                                                                tr("Choose File"), QDir::homePath());
+
+                }else {
+                    filenamenew= QFileDialog::getExistingDirectory(0,"Choose Directory",QString(),QFileDialog::ShowDirsOnly);
+                }
+                qDebug()<<filenamenew;
+                if (filenamenew.size()<3)
+                    return;
+                /* reassigning file path */
+                int sameupto=-1;bool same=true;
+                for(int i=filenamenew.size()-1;i>=0;i--)
+                {
+                    if((file.size()-(filenamenew.size()-i))>=0) {
+                    if ((filenamenew[i]==file[file.size()-(filenamenew.size()-i)])&&same)
+                    {
+                        sameupto=i;
+                    }else{
+                        same=false;
+                    }
+                    }
+                }
+                if(sameupto==-1)
+                {  DATABASE<<filenamenew+"#tags-:"+queryl.at(1);
+                    ui->history->addItem("Added "+filenamenew+"#tags-:"+queryl.at(1));
+                    SAVEDATABASE();
+                    UPDATE_FILELIST();
+                    return;
+                 }
+                QString orginalpath=file.left(file.size()-(filenamenew.size()-sameupto)+1);
+                qDebug()<<"orgp "+orginalpath;
+                QString newpath=filenamenew.left(sameupto+1);
+                qDebug()<<"newp "+newpath;
+                QRegExp rx("#tags-:");
+                QStringList NEWDATABASE;
+                for (int i = 0; i < DATABASE.size(); ++i)
+                {
+                    QStringList queryi = DATABASE.at(i).split(rx);
+
+                    ui->FILE_LIST->addItem(queryi.at(0) +" ["+queryi.at(1)+"]");
+                    if(queryi.at(0).size()>4){
+                        QString subString=queryi.at(0).left(3);
+                        if (subString=="htt"){
+                            qDebug()<<"is a http link";
+                            NEWDATABASE<<DATABASE.at(i);
+                        } else{
+                            if (!QDir(queryi.at(0)).exists()&& !QFile(queryi.at(0)).exists()) {
+                                QString oldfilename=queryi.at(0);
+
+                                oldfilename.replace(orginalpath,newpath);
+                                qDebug()<<"new "+oldfilename;
+                                if (QDir(oldfilename).exists()|| QFile(oldfilename).exists()) {
+                                    qDebug()<<"Doesnot exist, so renaming "+queryi.at(0)+" to " +oldfilename;
+                                     ui->history->addItem("Fixed "+queryi.at(0)+" to " +oldfilename);
+
+                                    NEWDATABASE<<oldfilename+"#tags-:"+queryi.at(1);
+                                } else {
+                                    NEWDATABASE<<DATABASE.at(i);
+                                }
+
+
+                            } else {
+                                NEWDATABASE<<DATABASE.at(i);
+                            }
+                        }
+                    }
+
+                }
+                DATABASE.clear();
+                DATABASE<<NEWDATABASE;
+                SAVEDATABASE();
+                UPDATE_FILELIST();
+            }
+        }
+    }
+
 }
 
 void FileTagger::SAVEDATABASE()
@@ -212,12 +290,20 @@ void FileTagger::Check_FILELIST()
         QStringList queryi = DATABASE.at(i).split(rx);
 
         ui->FILE_LIST->addItem(queryi.at(0) +" ["+queryi.at(1)+"]");
-         if (QDir(queryi.at(0)).exists()||QFile(queryi.at(0)).exists()) {
-            ui->FILE_LIST->item(ui->FILE_LIST->count()-1)->setForeground(*(new QBrush(Qt::green)));
-          } else {
-             ui->FILE_LIST->item(ui->FILE_LIST->count()-1)->setForeground(*(new QBrush(Qt::red)));
-             count=count+1;
-         }
+        if(queryi.at(0).size()>4){
+            QString subString=queryi.at(0).left(3);
+            if (subString=="htt"){
+                qDebug()<<"is a http link";
+
+            } else{
+                if (QDir(queryi.at(0)).exists()||QFile(queryi.at(0)).exists()) {
+                    ui->FILE_LIST->item(ui->FILE_LIST->count()-1)->setForeground(*(new QBrush(Qt::green)));
+                } else {
+                    ui->FILE_LIST->item(ui->FILE_LIST->count()-1)->setForeground(*(new QBrush(Qt::red)));
+                    count=count+1;
+                }
+            }
+        }
 
     }
     ui->FILE_LIST->scrollToTop();
@@ -405,20 +491,20 @@ void FileTagger::REMOVEFROMDATABASE()
     if( LISTindex>=0 && LISTindex<DATABASE.size())
     {
         QMessageBox::StandardButton reply;
-            QStringList queryd = DATABASE.at(LISTindex).split(rx);
-          reply = QMessageBox::question(this, "Confirmation", queryd.at(0)+" Delete?",
-                                        QMessageBox::Yes|QMessageBox::No);
-          if (reply == QMessageBox::Yes) {
+        QStringList queryd = DATABASE.at(LISTindex).split(rx);
+        reply = QMessageBox::question(this, "Confirmation", queryd.at(0)+"\n Do you want to Delete?",
+                                      QMessageBox::Yes|QMessageBox::No);
+        if (reply == QMessageBox::Yes) {
 
 
-              DATABASE.removeAt(LISTindex);
-              ui->history->addItem("REMOVED "+queryd.at(0)+"  -["+queryd.at(1)+"]");
-              SAVEDATABASE();
-              //update FILE_LIST IN SECOND TAB
-              UPDATE_FILELIST();
-          } else {
+            DATABASE.removeAt(LISTindex);
+            ui->history->addItem("REMOVED "+queryd.at(0)+"  -["+queryd.at(1)+"]");
+            SAVEDATABASE();
+            //update FILE_LIST IN SECOND TAB
+            UPDATE_FILELIST();
+        } else {
             qDebug() << "Yes was *not* clicked";
-          }
+        }
 
 
 
@@ -465,7 +551,7 @@ void FileTagger::ADD_TAG_ACTION()
     OPENDATABASE();
     QString NEW_TAG= ui->ENTER_TAG->text().trimmed();
     QString file=ui->filename->text().trimmed();
-
+    bool ishttp=false;
     if(file.size()<2)
     {
         QMessageBox messageBox;
@@ -475,7 +561,12 @@ void FileTagger::ADD_TAG_ACTION()
     }
     file.replace("file:///","/");
     if( file.at(file.length()-1) == '/' ) file.remove( file.length()-1, 1 );
-    if (!QDir(file).exists()&&!QFile(file).exists())
+    if(file.size()>4){
+        QString subString=file.left(3);
+        if (subString=="htt")
+            ishttp=true;
+    }
+    if ((!QDir(file).exists()&&!QFile(file).exists())&&!ishttp)
     {
         QMessageBox messageBox;
         messageBox.critical(0,"Error","File/Folder does not exists");
@@ -520,7 +611,7 @@ void FileTagger::ADD_TAG_ACTION()
     ADDTAGS(query);
 
 
-    if (QDir(file).exists()||QFile(file).exists()) {
+    if (QDir(file).exists()||QFile(file).exists()||ishttp) {
         //qDebug()<<file;
 
         ADDTODATABASE(file+"#tags-:"+NEW_TAG);

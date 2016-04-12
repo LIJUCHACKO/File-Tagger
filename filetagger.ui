@@ -43,12 +43,12 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>941</width>
-      <height>721</height>
+      <width>896</width>
+      <height>450</height>
      </rect>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="CREATE">
      <property name="sizePolicy">
@@ -87,6 +87,9 @@
         <height>16777215</height>
        </size>
       </property>
+      <property name="verticalScrollBarPolicy">
+       <enum>Qt::ScrollBarAlwaysOn</enum>
+      </property>
       <property name="sizeAdjustPolicy">
        <enum>QAbstractScrollArea::AdjustToContents</enum>
       </property>
@@ -97,9 +100,9 @@
      <widget class="QLineEdit" name="filename">
       <property name="geometry">
        <rect>
-        <x>90</x>
+        <x>140</x>
         <y>40</y>
-        <width>791</width>
+        <width>741</width>
         <height>25</height>
        </rect>
       </property>
@@ -152,11 +155,17 @@
         <x>460</x>
         <y>130</y>
         <width>421</width>
-        <height>251</height>
+        <height>131</height>
        </rect>
       </property>
       <property name="focusPolicy">
        <enum>Qt::NoFocus</enum>
+      </property>
+      <property name="verticalScrollBarPolicy">
+       <enum>Qt::ScrollBarAlwaysOn</enum>
+      </property>
+      <property name="horizontalScrollBarPolicy">
+       <enum>Qt::ScrollBarAlwaysOn</enum>
       </property>
      </widget>
      <widget class="QLabel" name="HISTORY">
@@ -175,9 +184,9 @@
      <widget class="QLineEdit" name="ENTER_TAG">
       <property name="geometry">
        <rect>
-        <x>90</x>
+        <x>140</x>
         <y>70</y>
-        <width>611</width>
+        <width>561</width>
         <height>25</height>
        </rect>
       </property>
@@ -190,25 +199,138 @@
        <rect>
         <x>10</x>
         <y>40</y>
-        <width>71</width>
+        <width>121</width>
         <height>21</height>
        </rect>
       </property>
       <property name="text">
-       <string>File/Folder</string>
+       <string>File/Folder/website</string>
       </property>
      </widget>
      <widget class="QLabel" name="filenametag_2">
       <property name="geometry">
        <rect>
-        <x>100</x>
+        <x>90</x>
         <y>10</y>
-        <width>211</width>
+        <width>311</width>
         <height>21</height>
        </rect>
       </property>
       <property name="text">
-       <string>Drag &amp; Drop File or Folder</string>
+       <string>Drag &amp; Drop File or Folder    OR   Copy paste path</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="Versiono">
+      <property name="geometry">
+       <rect>
+        <x>470</x>
+        <y>310</y>
+        <width>91</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Version no    -:</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="Source">
+      <property name="geometry">
+       <rect>
+        <x>470</x>
+        <y>350</y>
+        <width>391</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Source code -: https://github.com/LIJUCHACKO/File-Tagger</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="version">
+      <property name="geometry">
+       <rect>
+        <x>561</x>
+        <y>313</y>
+        <width>59</width>
+        <height>15</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>TextLabel</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label">
+      <property name="geometry">
+       <rect>
+        <x>460</x>
+        <y>280</y>
+        <width>59</width>
+        <height>15</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>ABOUT</string>
+      </property>
+     </widget>
+     <widget class="Line" name="line">
+      <property name="geometry">
+       <rect>
+        <x>457</x>
+        <y>290</y>
+        <width>421</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+     <widget class="Line" name="line_2">
+      <property name="geometry">
+       <rect>
+        <x>460</x>
+        <y>370</y>
+        <width>421</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+     <widget class="Line" name="line_3">
+      <property name="geometry">
+       <rect>
+        <x>870</x>
+        <y>297</y>
+        <width>20</width>
+        <height>81</height>
+       </rect>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+     </widget>
+     <widget class="Line" name="line_4">
+      <property name="geometry">
+       <rect>
+        <x>450</x>
+        <y>300</y>
+        <width>20</width>
+        <height>81</height>
+       </rect>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Sunken</enum>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
       </property>
      </widget>
      <zorder>ENTER_TAG</zorder>
@@ -221,6 +343,14 @@
      <zorder>HISTORY</zorder>
      <zorder>filenametag</zorder>
      <zorder>filenametag_2</zorder>
+     <zorder>Versiono</zorder>
+     <zorder>Source</zorder>
+     <zorder>version</zorder>
+     <zorder>label</zorder>
+     <zorder>line</zorder>
+     <zorder>line_2</zorder>
+     <zorder>line_3</zorder>
+     <zorder>line_4</zorder>
     </widget>
     <widget class="QWidget" name="FIND">
      <property name="sizePolicy">
@@ -264,7 +394,7 @@
         <x>10</x>
         <y>90</y>
         <width>761</width>
-        <height>341</height>
+        <height>311</height>
        </rect>
       </property>
       <property name="sizePolicy">
@@ -285,6 +415,12 @@
         <height>16777215</height>
        </size>
       </property>
+      <property name="verticalScrollBarPolicy">
+       <enum>Qt::ScrollBarAlwaysOn</enum>
+      </property>
+      <property name="horizontalScrollBarPolicy">
+       <enum>Qt::ScrollBarAlwaysOn</enum>
+      </property>
       <property name="sizeAdjustPolicy">
        <enum>QAbstractScrollArea::AdjustToContents</enum>
       </property>
@@ -297,21 +433,21 @@
        <rect>
         <x>10</x>
         <y>60</y>
-        <width>461</width>
+        <width>571</width>
         <height>16</height>
        </rect>
       </property>
       <property name="text">
-       <string>FILES/FOLDERS with above tag  (CLICK TO OPEN)</string>
+       <string>FILES/FOLDER/website   with above tags is on the top of the list  (CLICK TO OPEN)</string>
       </property>
      </widget>
      <widget class="QPushButton" name="REMOVETAG">
       <property name="geometry">
        <rect>
         <x>780</x>
-        <y>100</y>
-        <width>111</width>
-        <height>61</height>
+        <y>140</y>
+        <width>101</width>
+        <height>51</height>
        </rect>
       </property>
       <property name="text">
@@ -322,9 +458,9 @@
       <property name="geometry">
        <rect>
         <x>780</x>
-        <y>180</y>
-        <width>111</width>
-        <height>61</height>
+        <y>280</y>
+        <width>101</width>
+        <height>51</height>
        </rect>
       </property>
       <property name="text">
@@ -332,49 +468,6 @@
       </property>
      </widget>
     </widget>
-   </widget>
-   <widget class="QLabel" name="label_2">
-    <property name="geometry">
-     <rect>
-      <x>12</x>
-      <y>440</y>
-      <width>400</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="sizePolicy">
-     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-      <horstretch>0</horstretch>
-      <verstretch>0</verstretch>
-     </sizepolicy>
-    </property>
-    <property name="font">
-     <font>
-      <italic>true</italic>
-      <kerning>false</kerning>
-     </font>
-    </property>
-    <property name="contextMenuPolicy">
-     <enum>Qt::NoContextMenu</enum>
-    </property>
-    <property name="inputMethodHints">
-     <set>Qt::ImhNone</set>
-    </property>
-    <property name="frameShape">
-     <enum>QFrame::NoFrame</enum>
-    </property>
-    <property name="frameShadow">
-     <enum>QFrame::Raised</enum>
-    </property>
-    <property name="text">
-     <string>https://github.com/LIJUCHACKO/File-Tagger</string>
-    </property>
-    <property name="openExternalLinks">
-     <bool>true</bool>
-    </property>
-    <property name="textInteractionFlags">
-     <set>Qt::TextBrowserInteraction</set>
-    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">

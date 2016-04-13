@@ -111,7 +111,7 @@ FileTagger::FileTagger(QWidget *parent) :
     ui->tabWidget->setTabText(0, "CREATE NEW TAGS");
     ui->tabWidget->setTabText(1, "BROWSE TAGS");
     setWindowTitle("File Tagger");
-    ui->version->setText("1.4");
+    ui->version->setText("1.5");
     if( FILE_ARG.size()<1){
         ui->tabWidget->setCurrentIndex(1);
     }else{
@@ -167,6 +167,11 @@ void FileTagger::OPEN_FILE()
                 }else {
                     filenamenew= QFileDialog::getExistingDirectory(0,"Choose Directory",QString(),QFileDialog::ShowDirsOnly);
                 }
+#ifdef WINDOWS
+                filenamenew.replace("/","\\");
+                file.replace("/","\\");
+#endif
+
                 qDebug()<<filenamenew;
                 if (filenamenew.size()<3)
                     return;
@@ -175,12 +180,12 @@ void FileTagger::OPEN_FILE()
                 for(int i=filenamenew.size()-1;i>=0;i--)
                 {
                     if((file.size()-(filenamenew.size()-i))>=0) {
-                    if ((filenamenew[i]==file[file.size()-(filenamenew.size()-i)])&&same)
-                    {
-                        sameupto=i;
-                    }else{
-                        same=false;
-                    }
+                        if ((filenamenew[i]==file[file.size()-(filenamenew.size()-i)])&&same)
+                        {
+                            sameupto=i;
+                        }else{
+                            same=false;
+                        }
                     }
                 }
                 if(sameupto==-1)
@@ -189,7 +194,7 @@ void FileTagger::OPEN_FILE()
                     SAVEDATABASE();
                     UPDATE_FILELIST();
                     return;
-                 }
+                }
                 QString orginalpath=file.left(file.size()-(filenamenew.size()-sameupto)+1);
                 qDebug()<<"orgp "+orginalpath;
                 QString newpath=filenamenew.left(sameupto+1);
@@ -209,12 +214,14 @@ void FileTagger::OPEN_FILE()
                         } else{
                             if (!QDir(queryi.at(0)).exists()&& !QFile(queryi.at(0)).exists()) {
                                 QString oldfilename=queryi.at(0);
-
+#ifdef WINDOWS
+                                oldfilename.replace("/","\\");
+#endif
                                 oldfilename.replace(orginalpath,newpath);
                                 qDebug()<<"new "+oldfilename;
                                 if (QDir(oldfilename).exists()|| QFile(oldfilename).exists()) {
                                     qDebug()<<"Doesnot exist, so renaming "+queryi.at(0)+" to " +oldfilename;
-                                     ui->history->addItem("Fixed "+queryi.at(0)+" to " +oldfilename);
+                                    ui->history->addItem("Fixed "+queryi.at(0)+" to " +oldfilename);
 
                                     NEWDATABASE<<oldfilename+"#tags-:"+queryi.at(1);
                                 } else {

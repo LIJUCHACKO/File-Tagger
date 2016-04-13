@@ -18,7 +18,7 @@
 
 #ifndef FILETAGGER_H
 #define FILETAGGER_H
-
+//#define WINDOWS
 #include <QMainWindow>
 
 namespace Ui {

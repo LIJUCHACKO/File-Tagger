@@ -48,7 +48,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="CREATE">
      <property name="sizePolicy">
@@ -100,9 +100,9 @@
      <widget class="QLineEdit" name="filename">
       <property name="geometry">
        <rect>
-        <x>140</x>
-        <y>40</y>
-        <width>741</width>
+        <x>180</x>
+        <y>30</y>
+        <width>691</width>
         <height>25</height>
        </rect>
       </property>
@@ -126,14 +126,14 @@
      <widget class="QLabel" name="newtags">
       <property name="geometry">
        <rect>
-        <x>10</x>
+        <x>50</x>
         <y>70</y>
-        <width>71</width>
+        <width>111</width>
         <height>21</height>
        </rect>
       </property>
       <property name="text">
-       <string>Enters Tags</string>
+       <string>Enters Tags </string>
       </property>
      </widget>
      <widget class="QPushButton" name="ADD_TAG">
@@ -184,9 +184,9 @@
      <widget class="QLineEdit" name="ENTER_TAG">
       <property name="geometry">
        <rect>
-        <x>140</x>
+        <x>180</x>
         <y>70</y>
-        <width>561</width>
+        <width>521</width>
         <height>25</height>
        </rect>
       </property>
@@ -197,14 +197,14 @@
      <widget class="QLabel" name="filenametag">
       <property name="geometry">
        <rect>
-        <x>10</x>
-        <y>40</y>
-        <width>121</width>
+        <x>20</x>
+        <y>30</y>
+        <width>151</width>
         <height>21</height>
        </rect>
       </property>
       <property name="text">
-       <string>File/Folder/website</string>
+       <string>File/Folder/website  path</string>
       </property>
      </widget>
      <widget class="QLabel" name="filenametag_2">
@@ -333,6 +333,19 @@
        <enum>Qt::Vertical</enum>
       </property>
      </widget>
+     <widget class="QLabel" name="label_2">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>90</y>
+        <width>171</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>(separated by blank space)</string>
+      </property>
+     </widget>
      <zorder>ENTER_TAG</zorder>
      <zorder>PREVIOUS_TAGS</zorder>
      <zorder>filename</zorder>
@@ -351,6 +364,7 @@
      <zorder>line_2</zorder>
      <zorder>line_3</zorder>
      <zorder>line_4</zorder>
+     <zorder>label_2</zorder>
     </widget>
     <widget class="QWidget" name="FIND">
      <property name="sizePolicy">
@@ -366,7 +380,7 @@
       <property name="geometry">
        <rect>
         <x>90</x>
-        <y>20</y>
+        <y>10</y>
         <width>791</width>
         <height>25</height>
        </rect>
@@ -379,7 +393,7 @@
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>30</y>
+        <y>20</y>
         <width>81</width>
         <height>16</height>
        </rect>
@@ -465,6 +479,19 @@
       </property>
       <property name="text">
        <string>CHECK FILES</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_3">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>40</y>
+        <width>171</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>(separated by blank space)</string>
       </property>
      </widget>
     </widget>

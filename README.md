@@ -15,7 +15,9 @@ About
 
   6. Screenshot of the application is also uploaded.(TAB1.png, TAB2.png)
 
-  
+Requirement
+---------------------------------
+  Qt 5.4 
 
 Installation
 ------------------------------------

@@ -24,7 +24,7 @@ Installation
 
   1. Compile the project in qtcreator and copy FILETAGGER to /usr/bin. Executable file for 64 bit linux machine is uploaded(Compile on ubuntu14.04LTS). 
   
-  2. On KDE Desktop file_tag action can be added to file browsers. Do as follows 
+  2. On KDE Desktop file_tag action can be added on file browsers. Do as follows 
   
 
 

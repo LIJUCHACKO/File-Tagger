@@ -27,19 +27,14 @@
 
 extern QString FILE_ARG;
 float wordmatching(const QString &wordq1,const QString &wordq2)
-{  // float c=2.45;
-    //qDebug()<<c;
+{
     char word1[200];
     char word2[200];
     strcpy(word1,wordq1.toStdString().c_str());
     strcpy(word2,wordq2.toStdString().c_str());
 
     int word1len, word2len ,consder1[200], consder2[200],k,i,j;
-    for(i=0;i<200;i++)
-    {
-        consder1[i]=0;
-        consder2[i]=0;
-    }
+
     //tolower
     for(i=0;i<=strlen(word1);i++){
         if(word1[i]>=65&&word1[i]<=90)
@@ -53,52 +48,65 @@ float wordmatching(const QString &wordq1,const QString &wordq2)
 
     word1len=strlen(word1);
     word2len=strlen(word2);
-
-    float score=0,skipped,count;
-    int inik=0;
-    int inij=0;
-    int countstop=0;
-    for (i=0; i<word1len;i++)
+    float finalscore=0;
+    int jstart;
+    for (jstart=0; jstart<word2len;jstart++)
     {
-        count=-1;
-        k=i;
-        countstop=0;
-        skipped=0;
-        for (j=0; j<word2len;j++)
+        for(i=0;i<200;i++)
         {
-
-            if ((word1[k]==word2[j])&&(consder1[k]==0)&&(consder2[j]==0))
+            consder1[i]=0;
+            consder2[i]=0;
+        }
+        float score=0,skipped,count;
+        int inik=0;
+        int inij=0;
+        int countstop=0;
+        for (i=0; i<word1len;i++)
+        {
+            count=-1;
+            k=i;
+            countstop=0;
+            skipped=0;
+            for (j=jstart; j<word2len;j++)
             {
-                if (countstop==0 )
+
+                if ((word1[k]==word2[j])&&(consder1[k]==0)&&(consder2[j]==0))
                 {
-                    if (count>=0 )
-                    {  count=count*1.5+1-skipped/3;
+                    if (countstop==0 )
+                    {
+                        if (count>=0 )
+                        {  count=count*1.5+1-skipped/3;
 
-                        consder1[k]=1 ;  consder2[j]=1;
-                        consder1[inik]=1 ;  consder2[inij]=1;
+                            consder1[k]=1 ;  consder2[j]=1;
+                            consder1[inik]=1 ;  consder2[inij]=1;
 
-                        skipped=0; }
-                    else
-                    {  inik=k;
-                        inij=j;
-                        count=count+1;
+                            skipped=0; }
+                        else
+                        {  inik=k;
+                            inij=j;
+                            count=count+1;
+                        }
+                        k=k+1;
+                        if (k>word1len)
+                            countstop=1;
                     }
-                    k=k+1;
-                    if (k>word1len)
-                        countstop=1;
+                }
+                else
+                {
+                    if(count>=0)
+                        skipped=skipped+1;
+
                 }
             }
-            else
-            {
-                if(count>=0)
-                    skipped=skipped+1;
-
-            }
+            if(count>=0)
+                score=score+count;
         }
-        if(count>=0)
-            score=score+count;
+        if (finalscore<score)
+        {
+            finalscore=score;
+        }
     }
-    return(score);
+    return(finalscore);
 }
 
 
@@ -111,7 +119,7 @@ FileTagger::FileTagger(QWidget *parent) :
     ui->tabWidget->setTabText(0, "CREATE NEW TAGS");
     ui->tabWidget->setTabText(1, "BROWSE TAGS");
     setWindowTitle("File Tagger");
-    ui->version->setText("1.5");
+    ui->version->setText("1.6");
     if( FILE_ARG.size()<1){
         ui->tabWidget->setCurrentIndex(1);
     }else{
@@ -405,7 +413,7 @@ void  FileTagger::SORTFILELIST()
         {
             for (int k = 0; k < dbtags.size(); ++k)
             {
-                ///adding weights on each tags individually
+                ///adding weights of each tags individually
                 score[i]=score[i]+wordmatching(dbtags.at(k),tags.at(j));
             }
         }

@@ -75,7 +75,7 @@ float wordmatching(const QString &wordq1,const QString &wordq2)
                     if (countstop==0 )
                     {
                         if (count>=0 )
-                        {  count=count*1.5+1-skipped/3;
+                        {  count=count*1.5+1-skipped/2;
 
                             consder1[k]=1 ;  consder2[j]=1;
                             consder1[inik]=1 ;  consder2[inij]=1;
@@ -120,9 +120,9 @@ FileTagger::FileTagger(QWidget *parent) :
     ui->tabWidget->setTabText(1, "BROWSE TAGS");
     setWindowTitle("File Tagger");
 #ifdef WINDOWS
-    ui->version->setText("1.6 (windows)");
+    ui->version->setText("1.7 (windows)");
 #else
-    ui->version->setText("1.6 (linux)");
+    ui->version->setText("1.7 (linux)");
 #endif
     if( FILE_ARG.size()<1){
         ui->tabWidget->setCurrentIndex(1);
@@ -427,9 +427,10 @@ void  FileTagger::SORTFILELIST()
     if (find.length()>0){
 
         QString replacest;
-        for (int i = 0; i < DATABASE.size()-1; ++i)
+        int scoretmp;
+        for (int i = 0; i < DATABASE.size()-1; i++)
         {
-            for (int j = i+1; j < DATABASE.size(); ++j)
+            for (int j = i+1; j < DATABASE.size(); j++)
             {
 
                 if (score[j] > score[i])
@@ -437,6 +438,9 @@ void  FileTagger::SORTFILELIST()
                     replacest=DATABASE.at(j);
                     DATABASE.replace(j,DATABASE.at(i) );
                     DATABASE.replace(i,replacest );
+                    scoretmp=score[j];
+                    score[j]=score[i];
+                    score[i]=scoretmp;
 
                 }
 

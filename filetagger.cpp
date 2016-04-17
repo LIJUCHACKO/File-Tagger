@@ -119,7 +119,11 @@ FileTagger::FileTagger(QWidget *parent) :
     ui->tabWidget->setTabText(0, "CREATE NEW TAGS");
     ui->tabWidget->setTabText(1, "BROWSE TAGS");
     setWindowTitle("File Tagger");
-    ui->version->setText("1.6");
+#ifdef WINDOWS
+    ui->version->setText("1.6 (windows)");
+#else
+    ui->version->setText("1.6 (linux)");
+#endif
     if( FILE_ARG.size()<1){
         ui->tabWidget->setCurrentIndex(1);
     }else{

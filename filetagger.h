@@ -19,7 +19,15 @@
 #ifndef FILETAGGER_H
 #define FILETAGGER_H
 //#define WINDOWS
+
+#include <QUrl>
+#include <QDebug>
 #include <QMainWindow>
+#include <QFileSystemWatcher>
+
+QT_BEGIN_NAMESPACE
+class QMimeData;
+QT_END_NAMESPACE
 
 namespace Ui {
 class FileTagger;
@@ -38,9 +46,11 @@ public:
     void OPENDATABASE();
     void UPDATE_FILELIST();
     QString dbdir;
+    bool activityover;
 
 private slots:
-
+    void dropEvent(QDropEvent *ev) Q_DECL_OVERRIDE;
+    void dragEnterEvent(QDragEnterEvent *ev) Q_DECL_OVERRIDE;
     void ADD_TAG_ACTION();
     void ADDTODATABASE(QString data );
     void ADDTAGS(QStringList tags);
@@ -51,8 +61,10 @@ private slots:
     void REMOVEFROMDATABASE();
     void OPEN_FILE();
     void Check_FILELIST();
+    void exitapp();
 private:
     Ui::FileTagger *ui;
+    QFileSystemWatcher *watcher;
 
 };
 

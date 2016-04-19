@@ -106,6 +106,9 @@
         <height>25</height>
        </rect>
       </property>
+      <property name="acceptDrops">
+       <bool>false</bool>
+      </property>
       <property name="text">
        <string/>
       </property>
@@ -210,8 +213,8 @@
      <widget class="QLabel" name="filenametag_2">
       <property name="geometry">
        <rect>
-        <x>90</x>
-        <y>10</y>
+        <x>190</x>
+        <y>0</y>
         <width>311</width>
         <height>21</height>
        </rect>

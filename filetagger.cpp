@@ -11,18 +11,25 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License.  
+    You should have received a copy of the GNU General Public License.
     If not, see <http://www.gnu.org/licenses/>.
 
 */
 
 
+
+
+
+#include <QThread>
+#include <QTime>
 #include "filetagger.h"
 #include "ui_filetagger.h"
 #include <QDir>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QDebug>
+#include <QDragEnterEvent>
+#include <QMimeData>
 #include <QDesktopServices>
 
 extern QString FILE_ARG;
@@ -115,14 +122,15 @@ FileTagger::FileTagger(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::FileTagger)
 {
+    setAcceptDrops(true);
     ui->setupUi(this);
     ui->tabWidget->setTabText(0, "CREATE NEW TAGS");
     ui->tabWidget->setTabText(1, "BROWSE TAGS");
     setWindowTitle("File Tagger");
 #ifdef WINDOWS
-    ui->version->setText("1.7 (windows)");
+    ui->version->setText("1.8 (windows)");
 #else
-    ui->version->setText("1.7 (linux)");
+    ui->version->setText("1.8 (linux)");
 #endif
     if( FILE_ARG.size()<1){
         ui->tabWidget->setCurrentIndex(1);
@@ -137,6 +145,15 @@ FileTagger::FileTagger(QWidget *parent) :
     if (!dir.exists()) {
         dir.mkpath(".");
     }
+    //lockfile
+    activityover=false;
+    QFile file(dbdir+"/.lockfile");
+    file.open(QIODevice::WriteOnly|QIODevice::Truncate|QIODevice::Text);
+    QTextStream out(&file);
+
+    out<<QDateTime::currentDateTime().toString();
+    watcher = new QFileSystemWatcher();
+    watcher->addPath(dbdir+"/.lockfile");
 
     OPENDATABASE();
     connect(ui->ADD_TAG,SIGNAL(clicked()), this, SLOT(ADD_TAG_ACTION()));
@@ -148,11 +165,49 @@ FileTagger::FileTagger(QWidget *parent) :
     connect(ui->ENTER_TAG,SIGNAL(returnPressed()), this, SLOT(AUTOCOMPLETETAG()));
     connect(ui->REMOVETAG ,SIGNAL(clicked()), this, SLOT(REMOVEFROMDATABASE()));
     connect(ui->CHECKFILES,SIGNAL(clicked()), this, SLOT(Check_FILELIST()));
+    connect(watcher,SIGNAL(fileChanged(QString)),SLOT(exitapp()));
     UPDATETAG();
 }
+void FileTagger::exitapp()
+{
+    if( activityover)
+     exit(1);
+}
+
+void FileTagger::dropEvent(QDropEvent *ev)
+{
+
+    const QMimeData *mimeData = ev->mimeData();
+    if (mimeData->hasUrls()) {
+        QList<QUrl> urlList = mimeData->urls();
+        QString text = urlList.at(0).path();
+
+#ifdef WINDOWS
+        ui->filename->setText(text.right(text.size()-1));
+#else
+        ui->filename->setText(text);
+#endif
+        ui->tabWidget->setCurrentIndex(0);
+        qDebug()<<text;
+    }
+
+
+
+
+}
+
+void FileTagger::dragEnterEvent(QDragEnterEvent *ev)
+{
+
+
+    ev->acceptProposedAction();
+    //emit changed(ev->mimeData());
+}
+
 
 void FileTagger::OPEN_FILE()
 {
+    activityover=true;
     int LISTindex=ui->FILE_LIST->currentRow();
 
     QRegExp rx("#tags-:");
@@ -261,7 +316,7 @@ void FileTagger::OPEN_FILE()
 void FileTagger::SAVEDATABASE()
 {
 
-
+    activityover=true;
     QFile file(dbdir+"/Filetagger_db");
     file.open(QIODevice::WriteOnly|QIODevice::Truncate|QIODevice::Text);
     QTextStream out(&file);
@@ -269,6 +324,7 @@ void FileTagger::SAVEDATABASE()
     {
         out<<DATABASE.at(i)+"\n";
     }
+
 
 }
 void FileTagger::OPENDATABASE()
@@ -302,6 +358,7 @@ void FileTagger::OPENDATABASE()
 
 void FileTagger::Check_FILELIST()
 {
+    activityover=true;
     ui->FILE_LIST->clear();
     QRegExp rx("#tags-:");int count=0;
     for (int i = 0; i < DATABASE.size(); ++i)
@@ -401,6 +458,7 @@ void  FileTagger::UPDATETAG()
 }
 void  FileTagger::SORTFILELIST()
 {
+    activityover=true;
     ui->PREVIOUS_TAGS->clear();
     QString find= ui->ENTER_TAG_FIND->text();
     float *score=new float[DATABASE.size()];
@@ -508,6 +566,7 @@ void  FileTagger::ADDTAGS(QStringList tags)
 }
 void FileTagger::REMOVEFROMDATABASE()
 {
+
     QRegExp rx("#tags-:");
     int LISTindex=ui->FILE_LIST->currentRow();
 

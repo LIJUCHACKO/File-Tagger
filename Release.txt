@@ -1,0 +1,22 @@
+Release notes
+-----------------------------
+Version 1.7 
+---------------------------------------
+ Implemented auto filepath correction if another file in the same path got corrected.
+
+Version 1.8 
+---------------------------------------
+ Added auto exiting feature when new instance starts
+ Drag & Drop of file/folder is implemented
+
+
+Version 1.9 
+---------------------------------------
+ History will stored and restored on re-opening
+
+
+
+Version 2.0 
+---------------------------------------
+ Corrected bug linked to history restoration.
+ Added updated checking feature

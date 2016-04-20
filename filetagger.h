@@ -41,9 +41,13 @@ public:
     explicit FileTagger(QWidget *parent = 0);
     ~FileTagger();
     QStringList DATABASE;
+    QStringList HISTORY;
     QStringList TAGS;
     void SAVEDATABASE();
     void OPENDATABASE();
+    void SAVEHISTORY();
+    void OPENHISTORY();
+
     void UPDATE_FILELIST();
     QString dbdir;
     bool activityover;
@@ -62,6 +66,7 @@ private slots:
     void OPEN_FILE();
     void Check_FILELIST();
     void exitapp();
+    void checkupdates();
 private:
     Ui::FileTagger *ui;
     QFileSystemWatcher *watcher;

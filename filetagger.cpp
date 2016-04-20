@@ -128,9 +128,9 @@ FileTagger::FileTagger(QWidget *parent) :
     ui->tabWidget->setTabText(1, "BROWSE TAGS");
     setWindowTitle("File Tagger");
 #ifdef WINDOWS
-    ui->version->setText("1.8 (windows)");
+    ui->version->setText("2.0 (windows)");
 #else
-    ui->version->setText("1.8 (linux)");
+    ui->version->setText("2.0 (linux)");
 #endif
     if( FILE_ARG.size()<1){
         ui->tabWidget->setCurrentIndex(1);
@@ -156,6 +156,7 @@ FileTagger::FileTagger(QWidget *parent) :
     watcher->addPath(dbdir+"/.lockfile");
 
     OPENDATABASE();
+    OPENHISTORY();
     connect(ui->ADD_TAG,SIGNAL(clicked()), this, SLOT(ADD_TAG_ACTION()));
     connect(ui->ENTER_TAG,SIGNAL(textChanged(QString)), this, SLOT(UPDATETAGLIST()));
     connect(ui->filename,SIGNAL(textChanged(QString)), this, SLOT(UPDATETAG()));
@@ -166,13 +167,67 @@ FileTagger::FileTagger(QWidget *parent) :
     connect(ui->REMOVETAG ,SIGNAL(clicked()), this, SLOT(REMOVEFROMDATABASE()));
     connect(ui->CHECKFILES,SIGNAL(clicked()), this, SLOT(Check_FILELIST()));
     connect(watcher,SIGNAL(fileChanged(QString)),SLOT(exitapp()));
+    connect(ui->updates,SIGNAL(clicked()), this, SLOT(checkupdates()));
     UPDATETAG();
+
 }
+
+void FileTagger::checkupdates()
+{
+
+#ifdef WINDOWS
+QDesktopServices::openUrl(QUrl("https://sourceforge.net/projects/file-tagger/files/MS%20Windows/"));
+#else
+QDesktopServices::openUrl(QUrl("https://sourceforge.net/projects/file-tagger/files/Ubuntu14.04_amd64/"));
+#endif
+}
+
 void FileTagger::exitapp()
 {
-    if( activityover)
-     exit(1);
+    if (activityover)
+        exit(1);
+
+    activityover=true;
 }
+void FileTagger::OPENHISTORY()
+{
+    HISTORY.clear();
+    QFile file(dbdir+"/Filetagger_history");
+    qDebug()<<dbdir;
+    QString data;
+    if (file.open(QFile::ReadOnly))
+    {
+        data = file.readAll();
+        file.close();
+        QStringList items =data.split("\n");
+        for (int i =(items.size()-15); i < items.size(); ++i)
+        {
+            if (items.at(i).size()>0)
+            {
+                HISTORY<<items.at(i);
+                ui->history->addItem(items.at(i));
+
+            }
+        }
+
+    }
+    ui->history->scrollToBottom();
+}
+void FileTagger::SAVEHISTORY()
+{
+
+
+    QFile file(dbdir+"/Filetagger_history");
+    file.open(QIODevice::WriteOnly|QIODevice::Truncate|QIODevice::Text);
+    QTextStream out(&file);
+    for (int i = 0; i < HISTORY.size(); ++i)
+    {
+        out<<HISTORY.at(i)+"\n";
+    }
+
+
+}
+
 
 void FileTagger::dropEvent(QDropEvent *ev)
 {
@@ -207,7 +262,7 @@ void FileTagger::dragEnterEvent(QDragEnterEvent *ev)
 
 void FileTagger::OPEN_FILE()
 {
-    activityover=true;
+
     int LISTindex=ui->FILE_LIST->currentRow();
 
     QRegExp rx("#tags-:");
@@ -258,6 +313,9 @@ void FileTagger::OPEN_FILE()
                 if(sameupto==-1)
                 {  DATABASE<<filenamenew+"#tags-:"+queryl.at(1);
                     ui->history->addItem("Added "+filenamenew+"#tags-:"+queryl.at(1));
+                    ui->history->scrollToBottom();
+                    HISTORY<<"Added "+filenamenew+"#tags-:"+queryl.at(1);
+                    ui->tabWidget->setCurrentIndex(0);
                     SAVEDATABASE();
                     UPDATE_FILELIST();
                     return;
@@ -289,7 +347,9 @@ void FileTagger::OPEN_FILE()
                                 if (QDir(oldfilename).exists()|| QFile(oldfilename).exists()) {
                                     qDebug()<<"Doesnot exist, so renaming "+queryi.at(0)+" to " +oldfilename;
                                     ui->history->addItem("Fixed "+queryi.at(0)+" to " +oldfilename);
-
+                                    ui->history->scrollToBottom();
+                                    ui->tabWidget->setCurrentIndex(0);
+                                    HISTORY<<"Fixed "+queryi.at(0)+" to " +oldfilename;
                                     NEWDATABASE<<oldfilename+"#tags-:"+queryi.at(1);
                                 } else {
                                     NEWDATABASE<<DATABASE.at(i);
@@ -316,7 +376,7 @@ void FileTagger::OPEN_FILE()
 void FileTagger::SAVEDATABASE()
 {
 
-    activityover=true;
+
     QFile file(dbdir+"/Filetagger_db");
     file.open(QIODevice::WriteOnly|QIODevice::Truncate|QIODevice::Text);
     QTextStream out(&file);
@@ -324,7 +384,7 @@ void FileTagger::SAVEDATABASE()
     {
         out<<DATABASE.at(i)+"\n";
     }
-
+    SAVEHISTORY();
 
 }
 void FileTagger::OPENDATABASE()
@@ -358,7 +418,7 @@ void FileTagger::OPENDATABASE()
 
 void FileTagger::Check_FILELIST()
 {
-    activityover=true;
+
     ui->FILE_LIST->clear();
     QRegExp rx("#tags-:");int count=0;
     for (int i = 0; i < DATABASE.size(); ++i)
@@ -458,7 +518,7 @@ void  FileTagger::UPDATETAG()
 }
 void  FileTagger::SORTFILELIST()
 {
-    activityover=true;
+
     ui->PREVIOUS_TAGS->clear();
     QString find= ui->ENTER_TAG_FIND->text();
     float *score=new float[DATABASE.size()];
@@ -581,6 +641,9 @@ void FileTagger::REMOVEFROMDATABASE()
 
             DATABASE.removeAt(LISTindex);
             ui->history->addItem("REMOVED "+queryd.at(0)+"  -["+queryd.at(1)+"]");
+            ui->history->scrollToBottom();
+            HISTORY<<"REMOVED "+queryd.at(0)+"  -["+queryd.at(1)+"]";
+            ui->tabWidget->setCurrentIndex(0);
             SAVEDATABASE();
             //update FILE_LIST IN SECOND TAB
             UPDATE_FILELIST();
@@ -622,6 +685,9 @@ void FileTagger::ADDTODATABASE(QString data)
 
 
     ui->history->addItem(prefix+" "+queryd.at(0)+"  -["+queryd.at(1)+"]");
+    ui->history->scrollToBottom();
+    HISTORY<<prefix+" "+queryd.at(0)+"  -["+queryd.at(1)+"]";
+    ui->tabWidget->setCurrentIndex(0);
     //update FILE_LIST IN SECOND TAB
     SAVEDATABASE();
     UPDATE_FILELIST();

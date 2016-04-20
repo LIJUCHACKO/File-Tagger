@@ -349,6 +349,19 @@
        <string>(separated by blank space)</string>
       </property>
      </widget>
+     <widget class="QPushButton" name="updates">
+      <property name="geometry">
+       <rect>
+        <x>710</x>
+        <y>310</y>
+        <width>151</width>
+        <height>27</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Check Updates</string>
+      </property>
+     </widget>
      <zorder>ENTER_TAG</zorder>
      <zorder>PREVIOUS_TAGS</zorder>
      <zorder>filename</zorder>
@@ -368,6 +381,7 @@
      <zorder>line_3</zorder>
      <zorder>line_4</zorder>
      <zorder>label_2</zorder>
+     <zorder>updates</zorder>
     </widget>
     <widget class="QWidget" name="FIND">
      <property name="sizePolicy">

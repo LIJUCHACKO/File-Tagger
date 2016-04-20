@@ -202,12 +202,15 @@ void FileTagger::OPENHISTORY()
         QStringList items =data.split("\n");
         for (int i =(items.size()-15); i < items.size(); ++i)
         {
-            if (items.at(i).size()>0)
+            if (i>=0)
             {
-                HISTORY<<items.at(i);
-                ui->history->addItem(items.at(i));
+                if (items.at(i).size()>0)
+                {
+                    HISTORY<<items.at(i).trimmed();
+                    ui->history->addItem(items.at(i).trimmed());
 
-            }
+                }
+             }
         }
 
     }

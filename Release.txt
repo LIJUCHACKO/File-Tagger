@@ -2,7 +2,7 @@ Release notes
 -----------------------------
 Version 1.7 
 ---------------------------------------
- Implemented auto filepath correction if another file in the same path got corrected.
+ Implemented auto filepath correction, if another file in the same path got corrected.
 
 Version 1.8 
 ---------------------------------------
@@ -12,11 +12,14 @@ Version 1.8
 
 Version 1.9 
 ---------------------------------------
- History will stored and restored on re-opening
-
+ History is stored and restored on re-opening
 
 
 Version 2.0 
 ---------------------------------------
  Corrected bug linked to history restoration.
- Added updated checking feature
+ Added updates checking feature
+
+Version 2.1
+----------------------------------------
+ Improved word matching algorithm

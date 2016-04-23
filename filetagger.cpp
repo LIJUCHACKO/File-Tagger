@@ -521,16 +521,16 @@ void  FileTagger::SORTFILELIST()
     QRegExp rxdb("#tags-:");
     QRegExp rx("(\\ |\\t)");
     QStringList tags = find.split(rx);
-
-    for (int i = 0; i < DATABASE.size(); ++i)
+    for (int i = 0; i < DATABASE.size();i++)
     {
         QStringList dbtaglist = DATABASE.at(i).split(rxdb);
         QStringList dbtags=dbtaglist.at(1).split(rx);
         score[i]=0.0;
-        for (int j = 0; j < tags.size(); ++j)
+        for (int j = 0; j < tags.size(); j++)
         {
-            for (int k = 0; k < dbtags.size(); ++k)
+            for (int k = 0; k < dbtags.size(); k++)
             {
+
                 ///taking weight  of highly matching tag
                 if (score[i]<wordmatching(dbtags.at(k),tags.at(j))/tags.at(j).size())
                     score[i]=wordmatching(dbtags.at(k),tags.at(j))/tags.at(j).size();
@@ -542,21 +542,23 @@ void  FileTagger::SORTFILELIST()
     if (find.length()>0){
 
         QString replacest;
-        int scoretmp;
+        float scoretmp;
+
         for (int i = 0; i < DATABASE.size()-1; i++)
         {
             for (int j = i+1; j < DATABASE.size(); j++)
             {
 
+
                 if (score[j] > score[i])
                 {
+
                     replacest=DATABASE.at(j);
                     DATABASE.replace(j,DATABASE.at(i) );
                     DATABASE.replace(i,replacest );
                     scoretmp=score[j];
                     score[j]=score[i];
                     score[i]=scoretmp;
-
                 }
 
             }

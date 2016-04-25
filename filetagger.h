@@ -24,9 +24,12 @@
 #include <QDebug>
 #include <QMainWindow>
 #include <QFileSystemWatcher>
+#include <QFileSystemModel>
+#include <QCompleter>
 
 QT_BEGIN_NAMESPACE
 class QMimeData;
+
 QT_END_NAMESPACE
 
 namespace Ui {
@@ -70,6 +73,7 @@ private slots:
 private:
     Ui::FileTagger *ui;
     QFileSystemWatcher *watcher;
+     QCompleter *completer;
 
 };
 

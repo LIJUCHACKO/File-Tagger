@@ -78,7 +78,7 @@ float wordmatching(const QString &wordq1,const QString &wordq2)
                     if (countstop==0 )
                     {
                         if (count>=0 )
-                        {  count=count*1.5+1-skipped/2;
+                        {  count=count*1.5+1-skipped/3;
 
                             skipped=0; }
                         else
@@ -121,9 +121,9 @@ FileTagger::FileTagger(QWidget *parent) :
     ui->tabWidget->setTabText(1, "BROWSE TAGS");
     setWindowTitle("File Tagger");
 #ifdef WINDOWS
-    ui->version->setText("2.1 (windows)");
+    ui->version->setText("2.2 (windows)");
 #else
-    ui->version->setText("2.1 (linux)");
+    ui->version->setText("2.2 (linux)");
 #endif
     if( FILE_ARG.size()<1){
         ui->tabWidget->setCurrentIndex(1);
@@ -163,15 +163,23 @@ FileTagger::FileTagger(QWidget *parent) :
     connect(ui->updates,SIGNAL(clicked()), this, SLOT(checkupdates()));
     UPDATETAG();
 
+    //filename autocompletion
+    completer = new QCompleter();
+
+    QFileSystemModel *fsModel = new QFileSystemModel(completer);
+    completer->setModel(fsModel);
+    fsModel->setRootPath("");
+    ui->filename->setCompleter(completer);
+
 }
 
 void FileTagger::checkupdates()
 {
 
 #ifdef WINDOWS
-QDesktopServices::openUrl(QUrl("https://sourceforge.net/projects/file-tagger/files/MS%20Windows/"));
+    QDesktopServices::openUrl(QUrl("https://sourceforge.net/projects/file-tagger/files/MS%20Windows/"));
 #else
-QDesktopServices::openUrl(QUrl("https://sourceforge.net/projects/file-tagger/files/Ubuntu14.04_amd64/"));
+    QDesktopServices::openUrl(QUrl("https://sourceforge.net/projects/file-tagger/files/Ubuntu14.04_amd64/"));
 #endif
 }
 
@@ -203,7 +211,7 @@ void FileTagger::OPENHISTORY()
                     ui->history->addItem(items.at(i).trimmed());
 
                 }
-             }
+            }
         }
 
     }
@@ -259,8 +267,9 @@ void FileTagger::dragEnterEvent(QDragEnterEvent *ev)
 void FileTagger::OPEN_FILE()
 {
 
-    int LISTindex=ui->FILE_LIST->currentRow();
-
+    int LISTindex=ui->FILE_LIST->currentRow()/3;
+    if (ui->FILE_LIST->currentRow()%3>0)
+        return;
     QRegExp rx("#tags-:");
 
     QStringList queryl = DATABASE.at(LISTindex).split(rx);
@@ -275,15 +284,17 @@ void FileTagger::OPEN_FILE()
                 QDesktopServices::openUrl(QUrl::fromLocalFile(file));
             } else {
                 qDebug()<<"cannot open path";
-                QMessageBox::StandardButton reply = QMessageBox::question(this, "File/folder missing ", file+"\n Is it a file ?",
+                QMessageBox::StandardButton reply = QMessageBox::question(this, "File/folder missing ", file+" missing\n Is it a file ?",
                                                                           QMessageBox::Yes|QMessageBox::No);
                 QString filenamenew;
                 if (reply == QMessageBox::Yes) {
                     filenamenew =  QFileDialog::getOpenFileName(this,
                                                                 tr("Choose File"), QDir::homePath());
 
-                }else {
+                }else if (reply == QMessageBox::No){
                     filenamenew= QFileDialog::getExistingDirectory(0,"Choose Directory",QString(),QFileDialog::ShowDirsOnly);
+                }else {
+                    return ;
                 }
 #ifdef WINDOWS
                 filenamenew.replace("/","\\");
@@ -312,6 +323,7 @@ void FileTagger::OPEN_FILE()
                     ui->history->scrollToBottom();
                     HISTORY<<"Added "+filenamenew+"#tags-:"+queryl.at(1);
                     ui->tabWidget->setCurrentIndex(0);
+                     DATABASE.removeAt(LISTindex);
                     SAVEDATABASE();
                     UPDATE_FILELIST();
                     return;
@@ -342,10 +354,10 @@ void FileTagger::OPEN_FILE()
                                 qDebug()<<"new "+oldfilename;
                                 if (QDir(oldfilename).exists()|| QFile(oldfilename).exists()) {
                                     qDebug()<<"Doesnot exist, so renaming "+queryi.at(0)+" to " +oldfilename;
-                                    ui->history->addItem("Fixed "+queryi.at(0)+" to " +oldfilename);
+                                    ui->history->addItem("Corrected "+queryi.at(0)+" to " +oldfilename);
                                     ui->history->scrollToBottom();
                                     ui->tabWidget->setCurrentIndex(0);
-                                    HISTORY<<"Fixed "+queryi.at(0)+" to " +oldfilename;
+                                    HISTORY<<"Corrected "+queryi.at(0)+" to " +oldfilename;
                                     NEWDATABASE<<oldfilename+"#tags-:"+queryi.at(1);
                                 } else {
                                     NEWDATABASE<<DATABASE.at(i);
@@ -420,8 +432,10 @@ void FileTagger::Check_FILELIST()
     for (int i = 0; i < DATABASE.size(); ++i)
     {
         QStringList queryi = DATABASE.at(i).split(rx);
+        ui->FILE_LIST->addItem(queryi.at(0));
+        ui->FILE_LIST->addItem("Tags-: "+queryi.at(1));
+        ui->FILE_LIST->addItem(" ");
 
-        ui->FILE_LIST->addItem(queryi.at(0) +" ["+queryi.at(1)+"]");
         if(queryi.at(0).size()>4){
             QString subString=queryi.at(0).left(3);
             if (subString=="htt"){
@@ -429,9 +443,11 @@ void FileTagger::Check_FILELIST()
 
             } else{
                 if (QDir(queryi.at(0)).exists()||QFile(queryi.at(0)).exists()) {
-                    ui->FILE_LIST->item(ui->FILE_LIST->count()-1)->setForeground(*(new QBrush(Qt::green)));
+                    ui->FILE_LIST->item(ui->FILE_LIST->count()-2)->setForeground(*(new QBrush(Qt::green)));
+                    ui->FILE_LIST->item(ui->FILE_LIST->count()-3)->setForeground(*(new QBrush(Qt::green)));
                 } else {
-                    ui->FILE_LIST->item(ui->FILE_LIST->count()-1)->setForeground(*(new QBrush(Qt::red)));
+                    ui->FILE_LIST->item(ui->FILE_LIST->count()-2)->setForeground(*(new QBrush(Qt::red)));
+                    ui->FILE_LIST->item(ui->FILE_LIST->count()-3)->setForeground(*(new QBrush(Qt::red)));
                     count=count+1;
                 }
             }
@@ -450,15 +466,15 @@ void FileTagger::UPDATE_FILELIST()
 {
     ui->FILE_LIST->clear();
     QRegExp rx("#tags-:");
+
     for (int i = 0; i < DATABASE.size(); ++i)
     {
         QStringList queryi = DATABASE.at(i).split(rx);
 
-        ui->FILE_LIST->addItem(queryi.at(0) +" ["+queryi.at(1)+"]");
-
-
-
-
+        ui->FILE_LIST->addItem(queryi.at(0));
+        ui->FILE_LIST->addItem("Tags-: "+queryi.at(1));
+        ui->FILE_LIST->item(ui->FILE_LIST->count()-1)->setForeground(*(new QBrush(Qt::darkGreen)));
+        ui->FILE_LIST->addItem(" ");
     }
     ui->FILE_LIST->scrollToTop();
 }
@@ -518,9 +534,11 @@ void  FileTagger::SORTFILELIST()
     ui->PREVIOUS_TAGS->clear();
     QString find= ui->ENTER_TAG_FIND->text();
     float *score=new float[DATABASE.size()];
+
     QRegExp rxdb("#tags-:");
     QRegExp rx("(\\ |\\t)");
     QStringList tags = find.split(rx);
+
     for (int i = 0; i < DATABASE.size();i++)
     {
         QStringList dbtaglist = DATABASE.at(i).split(rxdb);
@@ -530,10 +548,13 @@ void  FileTagger::SORTFILELIST()
         {
             for (int k = 0; k < dbtags.size(); k++)
             {
-
-                ///taking weight  of highly matching tag
-                if (score[i]<wordmatching(dbtags.at(k),tags.at(j))/tags.at(j).size())
-                    score[i]=wordmatching(dbtags.at(k),tags.at(j))/tags.at(j).size();
+                if (tags.at(j).trimmed().size()>0)
+                {
+                    float scoring=wordmatching(dbtags.at(k),tags.at(j))/tags.at(j).size();
+                    ///taking weight  of highly matching tag
+                    if (score[i]<scoring)
+                        score[i]=scoring;
+                }
             }
         }
 
@@ -563,6 +584,7 @@ void  FileTagger::SORTFILELIST()
 
             }
         }
+
         //update FILE_LIST IN SECOND TAB
         UPDATE_FILELIST();
 
@@ -570,7 +592,7 @@ void  FileTagger::SORTFILELIST()
 }
 void  FileTagger::UPDATETAGLIST()
 {
-    ui->PREVIOUS_TAGS->clear();
+
     QString tag= ui->ENTER_TAG->text();
     QString find;
     ui->PREVIOUS_TAGS->clear();
@@ -582,26 +604,33 @@ void  FileTagger::UPDATETAGLIST()
         QStringList query = tag.split(rx);
         int i=query.size();
         find=query.at(i-1);
-
-
+        float *score=new float[TAGS.size()];
+        for (int j = 0; j < TAGS.size(); ++j)
+        {
+            score[j]=wordmatching(TAGS.at(j),find);
+        }
+        float scoretmp;
         QString replacest;
         for (int i = 0; i < TAGS.size()-1; ++i)
         {
             for (int j = i+1; j < TAGS.size(); ++j)
             {
-                if (wordmatching(TAGS.at(j),find) > wordmatching(TAGS.at(i),find))
+                if (score[j] > score[i])
                 {
                     replacest=TAGS.at(j);
                     TAGS.replace(j,TAGS.at(i) );
                     TAGS.replace(i,replacest );
-
+                    scoretmp=score[j];
+                    score[j]=score[i];
+                    score[i]=scoretmp;
                 }
 
             }
         }
         ui->PREVIOUS_TAGS->addItems(TAGS);
         ui->PREVIOUS_TAGS->scrollToTop();
-
+        int posi=ui->ENTER_TAG->cursorPosition();
+        // ui->PREVIOUS_TAGS->setGeometry(180+posi,100,201,91);
 
     }
 }
@@ -627,7 +656,7 @@ void FileTagger::REMOVEFROMDATABASE()
 {
 
     QRegExp rx("#tags-:");
-    int LISTindex=ui->FILE_LIST->currentRow();
+    int LISTindex=ui->FILE_LIST->currentRow()/3;
 
     if( LISTindex>=0 && LISTindex<DATABASE.size())
     {
@@ -743,11 +772,11 @@ void FileTagger::ADD_TAG_ACTION()
 
             return;
         }
-        if ( STRING.count(QRegExp("[a-zA-Z]"))==0)
+        if ( STRING.count(QRegExp("[a-zA-Z0-9]"))==0)
         {
             if (STRING.size()>1){
                 QMessageBox messageBox;
-                messageBox.critical(0,"Error","Tags should contain atleast one character");
+                messageBox.critical(0,"Error","Tags should contain atleast one alphabet or number");
                 messageBox.setFixedSize(500,200);
 
                 return;

@@ -443,8 +443,8 @@ void FileTagger::Check_FILELIST()
     {
         QStringList queryi = DATABASE.at(i).split(rx);
         ui->FILE_LIST->addItem(queryi.at(0));
-        ui->FILE_LIST->addItem("Tags-: "+queryi.at(1));
-        ui->FILE_LIST->addItem(" ");
+        ui->FILE_LIST->addItem("Tags-: "+queryi.at(1)+"\n");
+
 
         if(queryi.at(0).size()>4){
             QString subString=queryi.at(0).left(3);
@@ -454,10 +454,10 @@ void FileTagger::Check_FILELIST()
             } else{
                 if (QDir(queryi.at(0)).exists()||QFile(queryi.at(0)).exists()) {
                     ui->FILE_LIST->item(ui->FILE_LIST->count()-2)->setForeground(*(new QBrush(Qt::green)));
-                    ui->FILE_LIST->item(ui->FILE_LIST->count()-3)->setForeground(*(new QBrush(Qt::green)));
+                    ui->FILE_LIST->item(ui->FILE_LIST->count()-1)->setForeground(*(new QBrush(Qt::green)));
                 } else {
                     ui->FILE_LIST->item(ui->FILE_LIST->count()-2)->setForeground(*(new QBrush(Qt::red)));
-                    ui->FILE_LIST->item(ui->FILE_LIST->count()-3)->setForeground(*(new QBrush(Qt::red)));
+                    ui->FILE_LIST->item(ui->FILE_LIST->count()-1)->setForeground(*(new QBrush(Qt::red)));
                     count=count+1;
                 }
             }

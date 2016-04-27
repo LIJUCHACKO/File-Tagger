@@ -26,6 +26,7 @@
 #include <QFileSystemWatcher>
 #include <QFileSystemModel>
 #include <QCompleter>
+#include <QListWidgetItem>
 
 QT_BEGIN_NAMESPACE
 class QMimeData;
@@ -58,9 +59,9 @@ public:
 private slots:
     void dropEvent(QDropEvent *ev) Q_DECL_OVERRIDE;
     void dragEnterEvent(QDragEnterEvent *ev) Q_DECL_OVERRIDE;
-    void ADD_TAG_ACTION();
+    void SAVE_TAG_ACTION();
     void ADDTODATABASE(QString data );
-    void ADDTAGS(QStringList tags);
+    void UPDATETAGDB(QStringList tags);
     void UPDATETAGLIST();
     void UPDATETAG();
     void SORTFILELIST();
@@ -74,6 +75,7 @@ private:
     Ui::FileTagger *ui;
     QFileSystemWatcher *watcher;
      QCompleter *completer;
+    bool stoptagsorting;
 
 };
 

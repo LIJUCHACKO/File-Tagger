@@ -24,3 +24,12 @@ Version 2.1
 ----------------------------------------
  Improved word matching algorithm
  Corrected bug in sort algorithm
+
+Version 2.2
+----------------------------------------
+ Improved Interface
+
+Version 2.3
+----------------------------------------
+ Improved Interface
+ Removed bug related to windows file separator

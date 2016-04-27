@@ -45,7 +45,7 @@ Run following as root
 
 Usage (for linux user)
 ------------------------------------
-  1. In Dolphin file browser, right click on the folder/file and select "ADD TAG" in actions menu. Enter the tags to bookmark the file and press "ADD TAG" button.Similar tags used before will be listed below. By clicking on them or by pressing enter, last tag can be replaced. For nautilus right click select script and run ADD TAG SCRIPT.
+  1. In Dolphin file browser, right click on the folder/file and select "ADD TAG" in actions menu. Enter the tags to bookmark the file and press "SAVE TAGS" button.Similar tags used before will be listed below. By clicking on them or by pressing enter, last tag can be replaced. For nautilus right click select script and run ADD TAG SCRIPT.
   
   2. In the "Browse Tag" tab, enter tags you want to search and files with approximate matching tags will come on the top.By clicking on file path/websites they will open in appropriate program.
 

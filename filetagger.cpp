@@ -40,7 +40,7 @@ float wordmatching(const QString &wordq1,const QString &wordq2)
     strcpy(word1,wordq1.toStdString().c_str());
     strcpy(word2,wordq2.toStdString().c_str());
 
-    int word1len, word2len ,consder1[200], consder2[200],k,i,j;
+    int word1len, word2len ,k,i,j;
 
     //tolower
     for(i=0;i<=strlen(word1);i++){
@@ -119,11 +119,13 @@ FileTagger::FileTagger(QWidget *parent) :
     ui->setupUi(this);
     ui->tabWidget->setTabText(0, "CREATE NEW TAGS");
     ui->tabWidget->setTabText(1, "BROWSE TAGS");
+    stoptagsorting=false;
+    ui->REMOVETAG->setEnabled(false);
     setWindowTitle("File Tagger");
 #ifdef WINDOWS
-    ui->version->setText("2.2 (windows)");
+    ui->version->setText("2.3 (windows)");
 #else
-    ui->version->setText("2.2 (linux)");
+    ui->version->setText("2.3 (linux)");
 #endif
     if( FILE_ARG.size()<1){
         ui->tabWidget->setCurrentIndex(1);
@@ -150,7 +152,7 @@ FileTagger::FileTagger(QWidget *parent) :
 
     OPENDATABASE();
     OPENHISTORY();
-    connect(ui->ADD_TAG,SIGNAL(clicked()), this, SLOT(ADD_TAG_ACTION()));
+    connect(ui->ADD_TAG,SIGNAL(clicked()), this, SLOT(SAVE_TAG_ACTION()));
     connect(ui->ENTER_TAG,SIGNAL(textChanged(QString)), this, SLOT(UPDATETAGLIST()));
     connect(ui->filename,SIGNAL(textChanged(QString)), this, SLOT(UPDATETAG()));
     connect(ui->ENTER_TAG_FIND,SIGNAL(textChanged(QString)), this, SLOT(SORTFILELIST()));
@@ -240,12 +242,16 @@ void FileTagger::dropEvent(QDropEvent *ev)
     if (mimeData->hasUrls()) {
         QList<QUrl> urlList = mimeData->urls();
         QString text = urlList.at(0).path();
-
+        if( text.at(text.length()-1) == '/' ) text.remove( text.length()-1, 1 );
 #ifdef WINDOWS
-        ui->filename->setText(text.right(text.size()-1));
-#else
-        ui->filename->setText(text);
+        text.replace("/","\\");
+        if( text.at(0) == '\\' ) text=text.right(text.size()-1);
+        if( text.at(text.length()-1) == '\\' ) text.remove( text.length()-1, 1 );
+
+
 #endif
+        ui->filename->setText(text);
+
         ui->tabWidget->setCurrentIndex(0);
         qDebug()<<text;
     }
@@ -267,9 +273,13 @@ void FileTagger::dragEnterEvent(QDragEnterEvent *ev)
 void FileTagger::OPEN_FILE()
 {
 
-    int LISTindex=ui->FILE_LIST->currentRow()/3;
-    if (ui->FILE_LIST->currentRow()%3>0)
+    int LISTindex=ui->FILE_LIST->currentRow()/2;
+    ui->REMOVETAG->setEnabled(false);
+    if (ui->FILE_LIST->currentRow()%2==1)
+        ui->REMOVETAG->setEnabled(true);
+    if (ui->FILE_LIST->currentRow()%2>0)
         return;
+
     QRegExp rx("#tags-:");
 
     QStringList queryl = DATABASE.at(LISTindex).split(rx);
@@ -323,7 +333,7 @@ void FileTagger::OPEN_FILE()
                     ui->history->scrollToBottom();
                     HISTORY<<"Added "+filenamenew+"#tags-:"+queryl.at(1);
                     ui->tabWidget->setCurrentIndex(0);
-                     DATABASE.removeAt(LISTindex);
+                    DATABASE.removeAt(LISTindex);
                     SAVEDATABASE();
                     UPDATE_FILELIST();
                     return;
@@ -415,7 +425,7 @@ void FileTagger::OPENDATABASE()
                 QStringList queryi = items.at(i).split(rxi);
                 QRegExp rx("(\\ |\\t)"); //RegEx for ' ' OR '\t'
                 QStringList query = queryi.at(1).split(rx);
-                ADDTAGS(query);
+                UPDATETAGDB(query);
             }
         }
 
@@ -470,18 +480,19 @@ void FileTagger::UPDATE_FILELIST()
     for (int i = 0; i < DATABASE.size(); ++i)
     {
         QStringList queryi = DATABASE.at(i).split(rx);
-
         ui->FILE_LIST->addItem(queryi.at(0));
-        ui->FILE_LIST->addItem("Tags-: "+queryi.at(1));
+        ui->FILE_LIST->addItem("Tags-: "+queryi.at(1)+"\n");
         ui->FILE_LIST->item(ui->FILE_LIST->count()-1)->setForeground(*(new QBrush(Qt::darkGreen)));
-        ui->FILE_LIST->addItem(" ");
+
+
+
     }
     ui->FILE_LIST->scrollToTop();
 }
 
 void FileTagger::AUTOCOMPLETETAG()
 {
-    //qDebug()<<"autocomplete";
+
     QRegExp rx("(\\ |\\t)");
     QString tag= ui->ENTER_TAG->text().trimmed();
     QStringList query = tag.split(rx);
@@ -497,7 +508,9 @@ void FileTagger::AUTOCOMPLETETAG()
     }else if(TAGS.size() >0) {
         finaltag=finaltag+TAGS.at(0)+" ";
     }
+    stoptagsorting=true;
     ui->ENTER_TAG->setText(finaltag);
+    stoptagsorting=false;
 }
 
 void  FileTagger::UPDATETAG()
@@ -511,7 +524,10 @@ void  FileTagger::UPDATETAG()
     filename.replace("file:///","/");
 
     if( filename.at(filename.length()-1) == '/' ) filename.remove( filename.length()-1, 1 );
-
+#ifdef WINDOWS
+    if( filename.at(filename.length()-1) == '\\' ) filename.remove( filename.length()-1, 1 );
+    filename.replace("/","\\");
+#endif
     QRegExp rx("#tags-:");
     for(int j=0;j<DATABASE.size();j++)
     {
@@ -592,7 +608,8 @@ void  FileTagger::SORTFILELIST()
 }
 void  FileTagger::UPDATETAGLIST()
 {
-
+    if (stoptagsorting)
+        return;
     QString tag= ui->ENTER_TAG->text();
     QString find;
     ui->PREVIOUS_TAGS->clear();
@@ -627,14 +644,27 @@ void  FileTagger::UPDATETAGLIST()
 
             }
         }
-        ui->PREVIOUS_TAGS->addItems(TAGS);
+
+        for (int i = 0; i < TAGS.size(); ++i)
+        {
+            if( score[i]>0)
+            {
+                QListWidgetItem *item = new QListWidgetItem();
+                item->setData(Qt::DisplayRole, TAGS.at(i));
+                item->setTextAlignment(Qt::AlignRight);
+                ui->PREVIOUS_TAGS->addItem(item);
+                ui->PREVIOUS_TAGS->item(ui->PREVIOUS_TAGS->count()-1)->setForeground(*(new QBrush(Qt::darkGreen)));
+
+            }
+
+        }
         ui->PREVIOUS_TAGS->scrollToTop();
-        int posi=ui->ENTER_TAG->cursorPosition();
-        // ui->PREVIOUS_TAGS->setGeometry(180+posi,100,201,91);
+
+
 
     }
 }
-void  FileTagger::ADDTAGS(QStringList tags)
+void  FileTagger::UPDATETAGDB(QStringList tags)
 {
 
     for(int j=0;j<tags.size();j++)
@@ -656,13 +686,13 @@ void FileTagger::REMOVEFROMDATABASE()
 {
 
     QRegExp rx("#tags-:");
-    int LISTindex=ui->FILE_LIST->currentRow()/3;
+    int LISTindex=ui->FILE_LIST->currentRow()/2;
 
     if( LISTindex>=0 && LISTindex<DATABASE.size())
     {
         QMessageBox::StandardButton reply;
         QStringList queryd = DATABASE.at(LISTindex).split(rx);
-        reply = QMessageBox::question(this, "Confirmation", queryd.at(0)+"\n Do you want to Delete?",
+        reply = QMessageBox::question(this, "Confirmation", queryd.at(0)+"\n Do you want to Remove Tags?",
                                       QMessageBox::Yes|QMessageBox::No);
         if (reply == QMessageBox::Yes) {
 
@@ -722,7 +752,7 @@ void FileTagger::ADDTODATABASE(QString data)
 
 
 }
-void FileTagger::ADD_TAG_ACTION()
+void FileTagger::SAVE_TAG_ACTION()
 {
     OPENDATABASE();
     QString NEW_TAG= ui->ENTER_TAG->text().trimmed();
@@ -737,6 +767,11 @@ void FileTagger::ADD_TAG_ACTION()
     }
     file.replace("file:///","/");
     if( file.at(file.length()-1) == '/' ) file.remove( file.length()-1, 1 );
+
+#ifdef WINDOWS
+    if( file.at(file.length()-1) == '\\' ) file.remove( file.length()-1, 1 );
+    file.replace("/","\\");
+#endif
     if(file.size()>4){
         QString subString=file.left(3);
         if (subString=="htt")
@@ -784,7 +819,7 @@ void FileTagger::ADD_TAG_ACTION()
         }
     }
 
-    ADDTAGS(query);
+    UPDATETAGDB(query);
 
 
     if (QDir(file).exists()||QFile(file).exists()||ishttp) {

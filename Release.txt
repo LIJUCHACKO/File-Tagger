@@ -33,3 +33,7 @@ Version 2.3
 ----------------------------------------
  Improved Interface
  Removed bug related to windows file separator
+
+Version 2.4
+----------------------------------------
+ Added virtual file system creating facility

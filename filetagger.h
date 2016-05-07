@@ -27,6 +27,8 @@
 #include <QFileSystemModel>
 #include <QCompleter>
 #include <QListWidgetItem>
+#include <QInputDialog>
+
 
 QT_BEGIN_NAMESPACE
 class QMimeData;
@@ -45,13 +47,15 @@ public:
     explicit FileTagger(QWidget *parent = 0);
     ~FileTagger();
     QStringList DATABASE;
+    QStringList PRESENTDATABASE;
     QStringList HISTORY;
     QStringList TAGS;
     void SAVEDATABASE();
     void OPENDATABASE();
     void SAVEHISTORY();
     void OPENHISTORY();
-
+    void SORTExactFILELIST();
+    void SORTApproxiFILELIST();
     void UPDATE_FILELIST();
     QString dbdir;
     bool activityover;
@@ -71,10 +75,14 @@ private slots:
     void Check_FILELIST();
     void exitapp();
     void checkupdates();
+    void enablevirtualfilesysbut();
+    void disablevirtualfilesysbut();
+    void createvirtualfilesys();
+
 private:
     Ui::FileTagger *ui;
     QFileSystemWatcher *watcher;
-     QCompleter *completer;
+    QCompleter *completer;
     bool stoptagsorting;
 
 };

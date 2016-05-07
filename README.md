@@ -13,7 +13,7 @@ About
 
   5. File/Folder/website can be opened by clicking on the link listed in "Browse Tags" tab
 
-  6. Screenshot of the application is also uploaded.(TAB1.png, TAB2.png)
+  6. Virtual folder can be created after sorting files using exact string matching. A folder will be created with symbolic links to the files.
 
 Requirement
 ---------------------------------

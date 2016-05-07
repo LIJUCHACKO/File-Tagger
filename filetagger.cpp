@@ -123,15 +123,17 @@ FileTagger::FileTagger(QWidget *parent) :
     ui->REMOVETAG->setEnabled(false);
     setWindowTitle("File Tagger");
 #ifdef WINDOWS
-    ui->version->setText("2.3 (windows)");
+    ui->version->setText("2.4 (windows)");
 #else
-    ui->version->setText("2.3 (linux)");
+    ui->version->setText("2.4 (linux)");
 #endif
     if( FILE_ARG.size()<1){
         ui->tabWidget->setCurrentIndex(1);
     }else{
         ui->tabWidget->setCurrentIndex(0);
     }
+    ui->AproximateradioButton->setChecked(true);
+    ui->virtualFS->setEnabled(false);
     ui->filename->setText(FILE_ARG);
     dbdir= QDir::homePath();
     dbdir=dbdir+"/.Filetagger";
@@ -163,6 +165,9 @@ FileTagger::FileTagger(QWidget *parent) :
     connect(ui->CHECKFILES,SIGNAL(clicked()), this, SLOT(Check_FILELIST()));
     connect(watcher,SIGNAL(fileChanged(QString)),SLOT(exitapp()));
     connect(ui->updates,SIGNAL(clicked()), this, SLOT(checkupdates()));
+    connect(ui->ExactradioButton2 ,SIGNAL(pressed()),this,SLOT(enablevirtualfilesysbut()));
+    connect(ui->AproximateradioButton ,SIGNAL(pressed()),this,SLOT(disablevirtualfilesysbut()));
+    connect(ui->virtualFS ,SIGNAL(clicked()), this, SLOT(createvirtualfilesys()));
     UPDATETAG();
 
     //filename autocompletion
@@ -173,6 +178,64 @@ FileTagger::FileTagger(QWidget *parent) :
     fsModel->setRootPath("");
     ui->filename->setCompleter(completer);
 
+}
+
+void FileTagger::createvirtualfilesys()
+{
+    QString hmdir= QDir::homePath();
+    bool ok;
+    QString foldername = QInputDialog::getText( this,"Virtual file system", "Enter folder name:", QLineEdit::Normal,QString::null, &ok );
+    if (!foldername.isEmpty() ) {
+        // user entered something and pressed OK
+
+
+        QString selfolder= QFileDialog::getExistingDirectory(0,"Choose Location",hmdir);
+        QDir dir(selfolder+"/"+foldername);
+        if (ok && !dir.exists()) {
+            dir.mkpath(".");
+        }
+        QRegExp rxi("#tags-:");
+        QString filename;
+        QStringList filesep;
+        for (int i = 0; i < PRESENTDATABASE.size(); ++i)
+        {
+            QStringList filepath = PRESENTDATABASE.at(i).split(rxi);
+            QString file=filepath.at(0);
+#ifdef WINDOWS
+            QRegExp fileseparator("/");
+            filesep = file.replace("\\","/").split(fileseparator);
+            file.replace("/","\\");
+            selfolder.replace("/","\\");
+            filename=filesep.at(filesep.size()-1);
+            QFile::link (file,  selfolder+"\\"+foldername+"\\"+filename+".lnk" );
+
+#else
+            QRegExp fileseparator("/");
+            filesep = file.split(fileseparator);
+            filename=filesep.at(filesep.size()-1);
+            QFile::link (file,  selfolder+"/"+foldername+"/"+filename );
+#endif
+        }
+        QDesktopServices::openUrl(QUrl::fromLocalFile(selfolder+"/"+foldername));
+        HISTORY<<"Created virtual folder "+selfolder+"/"+foldername;
+        ui->history->addItem("Created virtual folder "+selfolder+"/"+foldername);
+        ui->history->scrollToBottom();
+        SAVEHISTORY();
+
+    }
+}
+
+void FileTagger::disablevirtualfilesysbut()
+{
+    ui->virtualFS->setEnabled(false);
+    SORTApproxiFILELIST();
+    ui->FILELIST_LABEL->setText("FILES/FOLDERS/WEBSITES   - SORTED BY APPROXIMATE STRING MATCHING ALGORITHM   (CLICK TO OPEN)");
+}
+void FileTagger::enablevirtualfilesysbut()
+{
+    ui->virtualFS->setEnabled(false);
+    SORTExactFILELIST();
+    ui->FILELIST_LABEL->setText("FILES/FOLDERS/WEBSITES   (CLICK TO OPEN)");
 }
 
 void FileTagger::checkupdates()
@@ -403,6 +466,8 @@ void FileTagger::SAVEDATABASE()
         out<<DATABASE.at(i)+"\n";
     }
     SAVEHISTORY();
+    ui->virtualFS->setEnabled(false);
+    ui->ENTER_TAG_FIND->setText("");
 
 }
 void FileTagger::OPENDATABASE()
@@ -420,12 +485,21 @@ void FileTagger::OPENDATABASE()
         {
             if (items.at(i).size()>0)
             {
-                DATABASE<<items.at(i).trimmed();
-                QRegExp rxi("#tags-:");
-                QStringList queryi = items.at(i).split(rxi);
-                QRegExp rx("(\\ |\\t)"); //RegEx for ' ' OR '\t'
-                QStringList query = queryi.at(1).split(rx);
-                UPDATETAGDB(query);
+                bool present=false;
+                for(int j=0;j<DATABASE.size();j++)
+                {
+                    if (DATABASE.at(j)==items.at(i).trimmed())
+                        present=true;
+                }
+                if(!present)
+                {
+                    DATABASE<<items.at(i).trimmed();
+                    QRegExp rxi("#tags-:");
+                    QStringList queryi = items.at(i).split(rxi);
+                    QRegExp rx("(\\ |\\t)"); //RegEx for ' ' OR '\t'
+                    QStringList query = queryi.at(1).split(rx);
+                    UPDATETAGDB(query);
+                }
             }
         }
 
@@ -470,6 +544,8 @@ void FileTagger::Check_FILELIST()
         messageBox.critical(0,"Error","Some files are missing (highlighted in red)");
         messageBox.setFixedSize(500,200);
     }
+    ui->virtualFS->setEnabled(false);
+    ui->ENTER_TAG_FIND->setText("");
 }
 
 void FileTagger::UPDATE_FILELIST()
@@ -492,7 +568,9 @@ void FileTagger::UPDATE_FILELIST()
 
 void FileTagger::AUTOCOMPLETETAG()
 {
-
+    //qDebug()<<ui->PREVIOUS_TAGS->count();
+    if(ui->PREVIOUS_TAGS->count()<=0.0)
+        return;
     QRegExp rx("(\\ |\\t)");
     QString tag= ui->ENTER_TAG->text().trimmed();
     QStringList query = tag.split(rx);
@@ -515,6 +593,8 @@ void FileTagger::AUTOCOMPLETETAG()
 
 void  FileTagger::UPDATETAG()
 {
+
+
     QString tag;
     QString filename=ui->filename->text().trimmed();
     if (filename.size()<1){
@@ -543,8 +623,85 @@ void  FileTagger::UPDATETAG()
 
     }
     ui->ENTER_TAG->setText(tag);
+
 }
-void  FileTagger::SORTFILELIST()
+
+void FileTagger::SORTFILELIST()
+{
+
+    if(ui->AproximateradioButton->isChecked())
+    {
+        SORTApproxiFILELIST();
+    }else {
+        SORTExactFILELIST();
+    }
+
+
+}
+void  FileTagger::SORTExactFILELIST()
+{   ui->virtualFS->setEnabled(false);
+    ui->FILE_LIST->clear();
+    QString find= ui->ENTER_TAG_FIND->text();
+    PRESENTDATABASE.clear();
+    QStringList ABSENTDATABASE;
+    QRegExp rxdb("#tags-:");
+    QRegExp rx("(\\ |\\t)");
+
+    QStringList tags = find.split(rx);
+    for (int i = 0; i < DATABASE.size();i++)
+    {
+
+        bool alltagpresent=true;
+        QStringList dbtaglist = DATABASE.at(i).split(rxdb);
+        QStringList dbtags=dbtaglist.at(1).split(rx);
+
+        for (int j = 0; j < tags.size(); j++)
+        {
+            bool present=false;
+            for (int k = 0; k < dbtags.size(); k++)
+            {
+                QString dbtag=dbtags.at(k);
+
+                if ((dbtag.toLower()).contains(tags.at(j).toLower().trimmed()))
+                {
+                    present=true;
+                }
+
+            }
+            alltagpresent=alltagpresent && present;
+
+
+        }
+        if (alltagpresent)
+        {
+            PRESENTDATABASE<<DATABASE.at(i);
+        } else {
+            ABSENTDATABASE<<DATABASE.at(i);
+        }
+
+    }
+
+
+
+    DATABASE.clear();
+    DATABASE<<PRESENTDATABASE;
+    DATABASE<<ABSENTDATABASE;
+    if( PRESENTDATABASE.size()>0 && find.size()>0)
+        ui->virtualFS->setEnabled(true);
+    for (int i = 0; i < PRESENTDATABASE.size();i++)
+    {
+        QStringList dbtaglist = DATABASE.at(i).split(rxdb);
+        ui->FILE_LIST->addItem(dbtaglist.at(0));
+        ui->FILE_LIST->addItem("Tags-: "+dbtaglist.at(1)+"\n");
+        ui->FILE_LIST->item(ui->FILE_LIST->count()-1)->setForeground(*(new QBrush(Qt::darkGreen)));
+
+    }
+
+    ui->FILE_LIST->scrollToTop();
+
+}
+
+void  FileTagger::SORTApproxiFILELIST()
 {
 
     ui->PREVIOUS_TAGS->clear();
@@ -608,6 +765,7 @@ void  FileTagger::SORTFILELIST()
 }
 void  FileTagger::UPDATETAGLIST()
 {
+
     if (stoptagsorting)
         return;
     QString tag= ui->ENTER_TAG->text();

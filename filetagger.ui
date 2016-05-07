@@ -48,7 +48,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="CREATE">
      <property name="sizePolicy">
@@ -549,20 +549,61 @@
        </rect>
       </property>
       <property name="text">
-       <string>CHECK FILES</string>
+       <string>CHECK for 
+ missing FILES</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_3">
       <property name="geometry">
        <rect>
-        <x>10</x>
+        <x>0</x>
         <y>30</y>
-        <width>171</width>
+        <width>181</width>
         <height>16</height>
        </rect>
       </property>
       <property name="text">
        <string>(separated by blank space)</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="virtualFS">
+      <property name="geometry">
+       <rect>
+        <x>780</x>
+        <y>40</y>
+        <width>101</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>CREATE 
+ Virtual Folder</string>
+      </property>
+     </widget>
+     <widget class="QRadioButton" name="AproximateradioButton">
+      <property name="geometry">
+       <rect>
+        <x>190</x>
+        <y>40</y>
+        <width>231</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>APPROXIMATE STRING MATCHING</string>
+      </property>
+     </widget>
+     <widget class="QRadioButton" name="ExactradioButton2">
+      <property name="geometry">
+       <rect>
+        <x>450</x>
+        <y>40</y>
+        <width>231</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>EXACT STRING MATCHING</string>
       </property>
      </widget>
     </widget>

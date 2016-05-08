@@ -59,6 +59,7 @@ public:
     void UPDATE_FILELIST();
     QString dbdir;
     bool activityover;
+    bool anytag;
 
 private slots:
     void dropEvent(QDropEvent *ev) Q_DECL_OVERRIDE;
@@ -78,6 +79,8 @@ private slots:
     void enablevirtualfilesysbut();
     void disablevirtualfilesysbut();
     void createvirtualfilesys();
+    void anytagexactsearch();
+    void anytagreleaseexactsearch();
 
 private:
     Ui::FileTagger *ui;

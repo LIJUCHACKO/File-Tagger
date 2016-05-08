@@ -606,6 +606,19 @@
        <string>EXACT STRING MATCHING</string>
       </property>
      </widget>
+     <widget class="QCheckBox" name="ANY">
+      <property name="geometry">
+       <rect>
+        <x>780</x>
+        <y>10</y>
+        <width>111</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>ANY</string>
+      </property>
+     </widget>
     </widget>
    </widget>
   </widget>

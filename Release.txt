@@ -27,7 +27,7 @@ Version 2.1
 
 Version 2.2
 ----------------------------------------
- Improved Interface
+ Improved interface
 
 Version 2.3
 ----------------------------------------
@@ -37,3 +37,7 @@ Version 2.3
 Version 2.4
 ----------------------------------------
  Added virtual file system creating facility
+
+Version 2.5
+----------------------------------------
+ Corrected bug in windows- In Website address  '/' got converted to '\' while saving

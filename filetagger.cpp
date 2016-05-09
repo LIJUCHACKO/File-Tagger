@@ -116,6 +116,8 @@ FileTagger::FileTagger(QWidget *parent) :
     ui(new Ui::FileTagger)
 {
     anytag=false;
+    Entertag_counter=0;
+    Entertagfind_counter=0;
     setAcceptDrops(true);
     ui->setupUi(this);
     ui->tabWidget->setTabText(0, "CREATE NEW TAGS");
@@ -124,9 +126,9 @@ FileTagger::FileTagger(QWidget *parent) :
     ui->REMOVETAG->setEnabled(false);
     setWindowTitle("File Tagger");
 #ifdef WINDOWS
-    ui->version->setText("2.4 (windows)");
+    ui->version->setText("2.5 (windows)");
 #else
-    ui->version->setText("2.4 (linux)");
+    ui->version->setText("2.5 (linux)");
 #endif
     if( FILE_ARG.size()<1){
         ui->tabWidget->setCurrentIndex(1);
@@ -157,9 +159,9 @@ FileTagger::FileTagger(QWidget *parent) :
     OPENDATABASE();
     OPENHISTORY();
     connect(ui->ADD_TAG,SIGNAL(clicked()), this, SLOT(SAVE_TAG_ACTION()));
-    connect(ui->ENTER_TAG,SIGNAL(textChanged(QString)), this, SLOT(UPDATETAGLIST()));
+    connect(ui->ENTER_TAG,SIGNAL(textChanged(QString)), this, SLOT(Entertag_counterupdate()));
     connect(ui->filename,SIGNAL(textChanged(QString)), this, SLOT(UPDATETAG()));
-    connect(ui->ENTER_TAG_FIND,SIGNAL(textChanged(QString)), this, SLOT(SORTFILELIST()));
+    connect(ui->ENTER_TAG_FIND,SIGNAL(textChanged(QString)), this, SLOT(Entertagfind_counterupdate()));
     connect(ui->PREVIOUS_TAGS, SIGNAL(itemClicked(QListWidgetItem*)),this, SLOT(AUTOCOMPLETETAG()));
     connect(ui->FILE_LIST, SIGNAL(itemClicked(QListWidgetItem*)),this, SLOT(OPEN_FILE()));
     connect(ui->ENTER_TAG,SIGNAL(returnPressed()), this, SLOT(AUTOCOMPLETETAG()));
@@ -173,7 +175,9 @@ FileTagger::FileTagger(QWidget *parent) :
     connect(ui->ANY ,SIGNAL(pressed()),this,SLOT(anytagexactsearch()));
     connect(ui->ANY ,SIGNAL(released()),this,SLOT(anytagreleaseexactsearch()));
     UPDATETAG();
-
+    QTimer *timer = new QTimer(this);
+    connect(timer, SIGNAL(timeout()), this, SLOT(timeexceeded()));
+    timer->start(300);
     //filename autocompletion
     completer = new QCompleter();
 
@@ -183,6 +187,37 @@ FileTagger::FileTagger(QWidget *parent) :
     ui->filename->setCompleter(completer);
 
 }
+
+void FileTagger::Entertag_counterupdate()
+{
+    Entertag_counter=2;
+}
+void FileTagger::Entertagfind_counterupdate()
+{
+    Entertagfind_counter=2;
+}
+void FileTagger::timeexceeded()
+{
+    if (Entertag_counter>0)
+    {
+        Entertag_counter=Entertag_counter-1;
+        if (Entertag_counter==0)
+            UPDATETAGLIST();
+
+    }
+    if (Entertagfind_counter>0)
+    {
+        Entertagfind_counter=Entertagfind_counter-1;
+
+        if (Entertagfind_counter==0)
+            SORTFILELIST();
+    }
+
+
+
+}
+
+
 void FileTagger::anytagreleaseexactsearch()
 {
 
@@ -531,6 +566,7 @@ void FileTagger::Check_FILELIST()
     ui->virtualFS->setEnabled(false);
     ui->ENTER_TAG_FIND->setText("");
     ui->FILE_LIST->clear();
+    ui->REMOVETAG->setEnabled(false);
     QRegExp rx("#tags-:");int count=0;
     for (int i = 0; i < DATABASE.size(); ++i)
     {
@@ -569,6 +605,7 @@ void FileTagger::Check_FILELIST()
 void FileTagger::UPDATE_FILELIST()
 {
     ui->FILE_LIST->clear();
+    ui->REMOVETAG->setEnabled(false);
     QRegExp rx("#tags-:");
 
     for (int i = 0; i < DATABASE.size(); ++i)
@@ -659,6 +696,7 @@ void FileTagger::SORTFILELIST()
 void  FileTagger::SORTExactFILELIST()
 {   ui->virtualFS->setEnabled(false);
     ui->FILE_LIST->clear();
+    ui->REMOVETAG->setEnabled(false);
     QString find= ui->ENTER_TAG_FIND->text();
     PRESENTDATABASE.clear();
     QStringList ABSENTDATABASE;
@@ -955,16 +993,17 @@ void FileTagger::SAVE_TAG_ACTION()
     }
     file.replace("file:///","/");
     if( file.at(file.length()-1) == '/' ) file.remove( file.length()-1, 1 );
-
-#ifdef WINDOWS
-    if( file.at(file.length()-1) == '\\' ) file.remove( file.length()-1, 1 );
-    file.replace("/","\\");
-#endif
     if(file.size()>4){
         QString subString=file.left(3);
         if (subString=="htt")
             ishttp=true;
     }
+#ifdef WINDOWS
+    if( file.at(file.length()-1) == '\\' ) file.remove( file.length()-1, 1 );
+    if(!ishttp)
+        file.replace("/","\\");
+#endif
+
     if ((!QDir(file).exists()&&!QFile(file).exists())&&!ishttp)
     {
         QMessageBox messageBox;
@@ -1015,11 +1054,6 @@ void FileTagger::SAVE_TAG_ACTION()
 
         ADDTODATABASE(file+"#tags-:"+NEW_TAG);
     }
-
-
-
-
-
 }
 
 FileTagger::~FileTagger()

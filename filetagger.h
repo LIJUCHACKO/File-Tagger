@@ -28,6 +28,7 @@
 #include <QCompleter>
 #include <QListWidgetItem>
 #include <QInputDialog>
+#include <QTimer>
 
 
 QT_BEGIN_NAMESPACE
@@ -46,10 +47,7 @@ class FileTagger : public QMainWindow
 public:
     explicit FileTagger(QWidget *parent = 0);
     ~FileTagger();
-    QStringList DATABASE;
-    QStringList PRESENTDATABASE;
-    QStringList HISTORY;
-    QStringList TAGS;
+
     void SAVEDATABASE();
     void OPENDATABASE();
     void SAVEHISTORY();
@@ -57,9 +55,8 @@ public:
     void SORTExactFILELIST();
     void SORTApproxiFILELIST();
     void UPDATE_FILELIST();
-    QString dbdir;
-    bool activityover;
-    bool anytag;
+    void UPDATETAGLIST();
+    void SORTFILELIST();
 
 private slots:
     void dropEvent(QDropEvent *ev) Q_DECL_OVERRIDE;
@@ -67,9 +64,7 @@ private slots:
     void SAVE_TAG_ACTION();
     void ADDTODATABASE(QString data );
     void UPDATETAGDB(QStringList tags);
-    void UPDATETAGLIST();
     void UPDATETAG();
-    void SORTFILELIST();
     void AUTOCOMPLETETAG();
     void REMOVEFROMDATABASE();
     void OPEN_FILE();
@@ -81,12 +76,24 @@ private slots:
     void createvirtualfilesys();
     void anytagexactsearch();
     void anytagreleaseexactsearch();
+    void Entertagfind_counterupdate();
+    void Entertag_counterupdate();
+    void timeexceeded();
 
 private:
     Ui::FileTagger *ui;
     QFileSystemWatcher *watcher;
     QCompleter *completer;
     bool stoptagsorting;
+    QString dbdir;
+    bool activityover;
+    bool anytag;
+    int Entertag_counter;
+    int Entertagfind_counter;
+    QStringList DATABASE;
+    QStringList PRESENTDATABASE;
+    QStringList HISTORY;
+    QStringList TAGS;
 
 };
 

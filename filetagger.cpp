@@ -31,8 +31,9 @@
 #include <QDragEnterEvent>
 #include <QMimeData>
 #include <QDesktopServices>
-
+#ifdef LINUX
 DATA *shared_mem;
+#endif
 extern QString FILE_ARG;
 float wordmatching(const QString &wordq1,const QString &wordq2)
 {
@@ -129,7 +130,11 @@ FileTagger::FileTagger(QWidget *parent) :
 #ifdef WINDOWS
     ui->version->setText("2.5 (windows)");
 #else
+#ifdef LINUX
     ui->version->setText("2.6 (linux)");
+#else
+    ui->version->setText("2.5 (unix)");
+#endif
 #endif
     if( FILE_ARG.size()<1){
         ui->tabWidget->setCurrentIndex(1);
@@ -156,7 +161,7 @@ FileTagger::FileTagger(QWidget *parent) :
     out<<QDateTime::currentDateTime().toString();
     watcher = new QFileSystemWatcher();
     watcher->addPath(dbdir+"/.lockfile");
-
+#ifdef LINUX
     key_t key=SHMKEY;int shmid =-1;
     shmid = shmget(key, SHMSZ, 0666);
     if (shmid<0)
@@ -183,7 +188,10 @@ FileTagger::FileTagger(QWidget *parent) :
 
         }
     }
-
+#else
+    OPENDATABASE();
+    OPENHISTORY();
+#endif
     connect(ui->ADD_TAG,SIGNAL(clicked()), this, SLOT(SAVE_TAG_ACTION()));
     connect(ui->ENTER_TAG,SIGNAL(textChanged(QString)), this, SLOT(Entertag_counterupdate()));
     connect(ui->filename,SIGNAL(textChanged(QString)), this, SLOT(UPDATETAG()));
@@ -213,7 +221,7 @@ FileTagger::FileTagger(QWidget *parent) :
     ui->filename->setCompleter(completer);
 
 }
-
+#ifdef LINUX
 void FileTagger::WRITETOSHARED_history()
 {
 
@@ -303,7 +311,7 @@ bool FileTagger::READFROMSHARED_DB()
     return loaded;
 
 }
-
+#endif
 void FileTagger::Entertag_counterupdate()
 {
     Entertag_counter=2;
@@ -450,7 +458,9 @@ void FileTagger::OPENHISTORY()
 
     }
     ui->history->scrollToBottom();
+#ifdef LINUX
     WRITETOSHARED_history();
+#endif
 }
 void FileTagger::SAVEHISTORY()
 {
@@ -463,7 +473,9 @@ void FileTagger::SAVEHISTORY()
     {
         out<<HISTORY.at(i)+"\n";
     }
+#ifdef LINUX
     WRITETOSHARED_history();
+#endif
 
 }
 
@@ -637,7 +649,9 @@ void FileTagger::SAVEDATABASE()
         out<<DATABASE.at(i)+"\n";
     }
     SAVEHISTORY();
+#ifdef LINUX
     WRITETOSHARED_DB();
+#endif
 
 }
 void FileTagger::OPENDATABASE()
@@ -679,7 +693,9 @@ void FileTagger::OPENDATABASE()
 
     }
     UPDATE_FILELIST();
+#ifdef LINUX
     WRITETOSHARED_DB();
+#endif
 }
 
 void FileTagger::Check_FILELIST()

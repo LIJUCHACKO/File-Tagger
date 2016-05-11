@@ -18,7 +18,12 @@
 
 #ifndef FILETAGGER_H
 #define FILETAGGER_H
+/*Choose operating system
+    1. In windows file separator have to be changed from '/' to '\'
+    2. In Linux shared memory is used to avoid reloading of database file.
+*/
 //#define WINDOWS
+#define LINUX
 
 #include <QUrl>
 #include <QDebug>
@@ -29,20 +34,21 @@
 #include <QListWidgetItem>
 #include <QInputDialog>
 #include <QTimer>
+
+#ifdef LINUX
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #define SHMSZ 90000000
 #define SHMKEY 1367
-
-
+#endif
 
 QT_BEGIN_NAMESPACE
 class QMimeData;
 
 QT_END_NAMESPACE
 
-
+#ifdef LINUX
 typedef struct
 {
 
@@ -52,7 +58,7 @@ typedef struct
     int history_size;
 
 }DATA ;
-
+#endif
 namespace Ui {
 class FileTagger;
 }
@@ -74,10 +80,12 @@ public:
     void UPDATE_FILELIST();
     void UPDATETAGLIST();
     void SORTFILELIST();
+#ifdef LINUX
     void WRITETOSHARED_DB();
     bool READFROMSHARED_DB();
     void WRITETOSHARED_history();
     bool READFROMSHARED_history();
+#endif
 
 private slots:
     void dropEvent(QDropEvent *ev) Q_DECL_OVERRIDE;

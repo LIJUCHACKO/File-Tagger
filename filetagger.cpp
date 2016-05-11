@@ -32,6 +32,7 @@
 #include <QMimeData>
 #include <QDesktopServices>
 
+DATA *shared_mem;
 extern QString FILE_ARG;
 float wordmatching(const QString &wordq1,const QString &wordq2)
 {
@@ -128,7 +129,7 @@ FileTagger::FileTagger(QWidget *parent) :
 #ifdef WINDOWS
     ui->version->setText("2.5 (windows)");
 #else
-    ui->version->setText("2.5 (linux)");
+    ui->version->setText("2.6 (linux)");
 #endif
     if( FILE_ARG.size()<1){
         ui->tabWidget->setCurrentIndex(1);
@@ -156,8 +157,33 @@ FileTagger::FileTagger(QWidget *parent) :
     watcher = new QFileSystemWatcher();
     watcher->addPath(dbdir+"/.lockfile");
 
-    OPENDATABASE();
-    OPENHISTORY();
+    key_t key=SHMKEY;int shmid =-1;
+    shmid = shmget(key, SHMSZ, 0666);
+    if (shmid<0)
+    {
+        qDebug()<<"no shared memory- creating shared memory";
+        shmid = shmget(key, SHMSZ, IPC_CREAT|0666);
+        shared_mem = (DATA * )shmat(shmid, NULL, 0);
+        memset(shared_mem,0,SHMSZ);
+        OPENDATABASE();
+        OPENHISTORY();
+
+
+    } else {
+        shared_mem = (DATA *)shmat(shmid, NULL, 0);
+
+        //shared memory checks
+        qDebug()<<"shared memory already present";
+        bool loaded=READFROMSHARED_DB();
+        bool loaded_his= READFROMSHARED_history();
+         if (!loaded || !loaded_his){
+            qDebug()<<"shared memory corrupt";
+             OPENDATABASE();
+             OPENHISTORY();
+
+        }
+    }
+
     connect(ui->ADD_TAG,SIGNAL(clicked()), this, SLOT(SAVE_TAG_ACTION()));
     connect(ui->ENTER_TAG,SIGNAL(textChanged(QString)), this, SLOT(Entertag_counterupdate()));
     connect(ui->filename,SIGNAL(textChanged(QString)), this, SLOT(UPDATETAG()));
@@ -185,6 +211,96 @@ FileTagger::FileTagger(QWidget *parent) :
     completer->setModel(fsModel);
     fsModel->setRootPath("");
     ui->filename->setCompleter(completer);
+
+}
+
+void FileTagger::WRITETOSHARED_history()
+{
+
+    QString data;
+    qDebug()<<"writing to shared history";
+    for (int i = 0; i < HISTORY.size(); ++i)
+    {
+        data=data+HISTORY.at(i)+"\n";
+    }
+    strcpy(shared_mem->history,data.toStdString().c_str());
+    shared_mem->history_size=HISTORY.size();
+
+}
+
+bool FileTagger::READFROMSHARED_history()
+{
+    bool loaded=false;
+    HISTORY.clear();
+
+    QString data=QString(shared_mem->history);
+    qDebug()<<"reading from shared memory history";
+
+        QStringList items =data.split("\n");
+        for (int i = 0; i < items.size(); ++i)
+        {
+
+                     if(items.at(i).trimmed().size()>0)
+                     {
+                         HISTORY<<items.at(i).trimmed();
+                          ui->history->addItem(items.at(i).trimmed());
+                     }
+
+            }
+     ui->history->scrollToBottom();
+     if ( HISTORY.size()==shared_mem->history_size)
+       {  loaded=true;}
+     else
+     { HISTORY.clear();}
+
+
+     return loaded;
+    }
+
+void FileTagger::WRITETOSHARED_DB()
+{
+
+    QString data;
+    qDebug()<<"writing to shared data";
+    for (int i = 0; i < DATABASE.size(); ++i)
+    {
+        data=data+DATABASE.at(i)+"\n";
+    }
+    strcpy(shared_mem->filetaggerdb,data.toStdString().c_str());
+    shared_mem->filetaggerdb_size=DATABASE.size();
+
+}
+
+bool FileTagger::READFROMSHARED_DB()
+{
+    bool loaded=false;
+    DATABASE.clear();
+    QString data=QString(shared_mem->filetaggerdb);
+    qDebug()<<"reading from shared memory data";
+
+        QStringList items =data.split("\n");
+        for (int i = 0; i < items.size(); ++i)
+        {
+
+                     QRegExp rxi("#tags-:");
+                     QStringList queryi = items.at(i).split(rxi);
+                     if(queryi.size()==2)
+                     {
+                         QRegExp rx("(\\ |\\t)"); //RegEx for ' ' OR '\t'
+                         QStringList query = queryi.at(1).split(rx);
+                         UPDATETAGDB(query);
+                         DATABASE<<items.at(i).trimmed();
+                     }
+
+            }
+
+    if ( DATABASE.size()==shared_mem->filetaggerdb_size)
+      {  loaded=true;}
+    else
+    { DATABASE.clear();}
+
+    UPDATE_FILELIST();
+    return loaded;
 
 }
 
@@ -334,6 +450,7 @@ void FileTagger::OPENHISTORY()
 
     }
     ui->history->scrollToBottom();
+    WRITETOSHARED_history();
 }
 void FileTagger::SAVEHISTORY()
 {
@@ -346,7 +463,7 @@ void FileTagger::SAVEHISTORY()
     {
         out<<HISTORY.at(i)+"\n";
     }
-
+    WRITETOSHARED_history();
 
 }
 
@@ -520,7 +637,7 @@ void FileTagger::SAVEDATABASE()
         out<<DATABASE.at(i)+"\n";
     }
     SAVEHISTORY();
-
+    WRITETOSHARED_DB();
 
 }
 void FileTagger::OPENDATABASE()
@@ -546,19 +663,23 @@ void FileTagger::OPENDATABASE()
                 }
                 if(!present)
                 {
-                    DATABASE<<items.at(i).trimmed();
+
                     QRegExp rxi("#tags-:");
                     QStringList queryi = items.at(i).split(rxi);
-                    QRegExp rx("(\\ |\\t)"); //RegEx for ' ' OR '\t'
-                    QStringList query = queryi.at(1).split(rx);
-                    UPDATETAGDB(query);
+                    if(queryi.size()==2)
+                    {
+                        QRegExp rx("(\\ |\\t)"); //RegEx for ' ' OR '\t'
+                        QStringList query = queryi.at(1).split(rx);
+                        UPDATETAGDB(query);
+                        DATABASE<<items.at(i).trimmed();
+                    }
                 }
             }
         }
 
     }
     UPDATE_FILELIST();
-
+    WRITETOSHARED_DB();
 }
 
 void FileTagger::Check_FILELIST()
@@ -661,7 +782,14 @@ void  FileTagger::UPDATETAG()
     if( filename.at(filename.length()-1) == '/' ) filename.remove( filename.length()-1, 1 );
 #ifdef WINDOWS
     if( filename.at(filename.length()-1) == '\\' ) filename.remove( filename.length()-1, 1 );
-    filename.replace("/","\\");
+    bool ishttp=false;
+    if(filename.size()>4){
+        QString subString=filename.left(3);
+        if (subString=="htt")
+            ishttp=true;
+    }
+    if (!ishttp)
+        filename.replace("/","\\");
 #endif
     QRegExp rx("#tags-:");
     for(int j=0;j<DATABASE.size();j++)
@@ -980,7 +1108,7 @@ void FileTagger::ADDTODATABASE(QString data)
 }
 void FileTagger::SAVE_TAG_ACTION()
 {
-    OPENDATABASE();
+    //OPENDATABASE();
     QString NEW_TAG= ui->ENTER_TAG->text().trimmed();
     QString file=ui->filename->text().trimmed();
     bool ishttp=false;

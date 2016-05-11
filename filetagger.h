@@ -29,12 +29,29 @@
 #include <QListWidgetItem>
 #include <QInputDialog>
 #include <QTimer>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#define SHMSZ 90000000
+#define SHMKEY 1367
+
 
 
 QT_BEGIN_NAMESPACE
 class QMimeData;
 
 QT_END_NAMESPACE
+
+
+typedef struct
+{
+
+    char filetaggerdb[10000000];
+    int filetaggerdb_size;
+    char history[10000];
+    int history_size;
+
+}DATA ;
 
 namespace Ui {
 class FileTagger;
@@ -57,6 +74,10 @@ public:
     void UPDATE_FILELIST();
     void UPDATETAGLIST();
     void SORTFILELIST();
+    void WRITETOSHARED_DB();
+    bool READFROMSHARED_DB();
+    void WRITETOSHARED_history();
+    bool READFROMSHARED_history();
 
 private slots:
     void dropEvent(QDropEvent *ev) Q_DECL_OVERRIDE;
@@ -96,5 +117,6 @@ private:
     QStringList TAGS;
 
 };
+
 
 #endif // FILETAGGER_H
